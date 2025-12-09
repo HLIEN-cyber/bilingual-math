@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雙語數學詞彙 | Bilingual Math Vocabulary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        main {
+            padding: 2rem;
+        }
+
+        .intro {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #555;
+            font-size: 1.1rem;
+        }
+
+        .vocab-list {
+            list-style: none;
+        }
+
+        .vocab-item {
+            margin-bottom: 1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .vocab-item:hover {
+            transform: translateX(5px);
+        }
+
+        .vocab-link {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .vocab-link:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .vocab-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 1.5rem;
+            color: #667eea;
+            flex-shrink: 0;
+        }
+
+        .vocab-link:hover .vocab-number {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .vocab-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .vocab-link {
+                padding: 1rem;
+            }
+
+            .vocab-title {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>雙語數學詞彙</h1>
+            <p class="subtitle">Bilingual Math Vocabulary</p>
+        </header>
+
+        <main>
+            <div class="intro">
+                <p>數學詞彙中英對照學習資源</p>
+                <p>Math Vocabulary Learning Resources in Chinese and English</p>
+            </div>
+
+            <ul class="vocab-list">
+                <li class="vocab-item">
+                    <a href="https://claude.ai/public/artifacts/eab7a152-b3cd-4b60-97ac-bc3900e9161f" class="vocab-link" target="_blank" rel="noopener noreferrer">
+                        <span class="vocab-number">1</span>
+                        <span class="vocab-title">數數 | Counting</span>
+                    </a>
+                </li>
+
+                <li class="vocab-item">
+                    <a href="https://claude.ai/public/artifacts/6444df4a-66db-4c9d-be0a-df801d78b6ab" class="vocab-link" target="_blank" rel="noopener noreferrer">
+                        <span class="vocab-number">2</span>
+                        <span class="vocab-title">三角函數圖形 | Trigonometric Function Graphs</span>
+                    </a>
+                </li>
+
+                <li class="vocab-item">
+                    <a href="https://claude.ai/public/artifacts/c66ce507-329f-4df1-84f8-d8e9bdc0b3f9" class="vocab-link" target="_blank" rel="noopener noreferrer">
+                        <span class="vocab-number">3</span>
+                        <span class="vocab-title">三角形的邊角 | Triangle Sides and Angles</span>
+                    </a>
+                </li>
+
+                <li class="vocab-item">
+                    <a href="https://claude.ai/public/artifacts/9b331d7c-d8c2-4d8d-8af3-e7468d0a0944" class="vocab-link" target="_blank" rel="noopener noreferrer">
+                        <span class="vocab-number">4</span>
+                        <span class="vocab-title">方位 | Directions</span>
+                    </a>
+                </li>
+
+                <li class="vocab-item">
+                    <a href="https://claude.ai/public/artifacts/05eeaca0-8dc0-4b38-b997-930e721656d7" class="vocab-link" target="_blank" rel="noopener noreferrer">
+                        <span class="vocab-number">5</span>
+                        <span class="vocab-title">指數 | Exponents</span>
+                    </a>
+                </li>
+
+                <li class="vocab-item">
+                    <a href="https://claude.ai/public/artifacts/bc881966-bda9-4b3f-af35-a20bda14efe4" class="vocab-link" target="_blank" rel="noopener noreferrer">
+                        <span class="vocab-number">6</span>
+                        <span class="vocab-title">對數 | Logarithms</span>
+                    </a>
+                </li>
+
+                <li class="vocab-item">
+                    <a href="https://claude.ai/public/artifacts/3bd8db96-7529-4597-b5af-6486fb939413" class="vocab-link" target="_blank" rel="noopener noreferrer">
+                        <span class="vocab-number">7</span>
+                        <span class="vocab-title">指對數應用問題 | Exponential and Logarithmic Applications</span>
+                    </a>
+                </li>
+
+                <li class="vocab-item">
+                    <a href="https://claude.ai/public/artifacts/e0569f6a-f857-43aa-8ec8-ff94ad443b2b" class="vocab-link" target="_blank" rel="noopener noreferrer">
+                        <span class="vocab-number">8</span>
+                        <span class="vocab-title">向量 | Vectors</span>
+                    </a>
+                </li>
+            </ul>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Bilingual Math Vocabulary | 雙語數學詞彙</p>
+        </footer>
+    </div>
+</body>
+</html>
