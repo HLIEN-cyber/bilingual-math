@@ -485,33 +485,45 @@
 
         <div id="comics-tab" class="tab-content">
             <div class="intro">
-                <p>上傳並管理您的雙語數學漫畫</p>
-                <p>Upload and Manage Your Bilingual Math Comics</p>
+                <p>透過趣味漫畫學習數學概念</p>
+                <p>Learn Math Concepts Through Fun Comics</p>
             </div>
 
-            <div class="upload-section">
-                <h2>📤 上傳漫畫 | Upload Comics</h2>
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">🖼️</div>
-                    <div class="upload-text">
-                        <p><strong>點擊或拖曳圖片到此處上傳</strong></p>
-                        <p>Click or drag images here to upload</p>
-                        <p style="font-size: 0.9rem; color: #888; margin-top: 0.5rem;">
-                            支援格式：JPG, PNG, GIF | Supported formats: JPG, PNG, GIF
-                        </p>
+            <div class="comics-grid">
+                <div class="comic-card">
+                    <img src="images/doraemon-spatial-geometry.png" alt="Doraemon's Spatial Geometry Adventure" class="comic-image" onclick="viewStaticComic(this)">
+                    <div class="comic-info">
+                        <div class="comic-title">哆啦A夢的空間幾何冒險（從2D到3D）</div>
+                        <div class="comic-title" style="font-size: 0.95rem; color: #666; margin-top: 0.3rem;">Doraemon's Spatial Geometry Adventure (From 2D to 3D)</div>
+                        <div class="comic-date">學習主題：空間幾何、維度轉換</div>
+                        <div class="comic-actions">
+                            <button class="btn-view" onclick="viewStaticComic(document.querySelector('[alt=\'Doraemon\\\'s Spatial Geometry Adventure\']'))">查看 View</button>
+                        </div>
                     </div>
-                    <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
                 </div>
-                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
-                    選擇檔案 | Choose Files
-                </button>
-            </div>
 
-            <div id="comicsContainer">
-                <div class="empty-state">
-                    <div class="empty-state-icon">📭</div>
-                    <p><strong>尚未上傳任何漫畫</strong></p>
-                    <p>No comics uploaded yet</p>
+                <div class="comic-card">
+                    <img src="images/polar-coordinates-panels.png" alt="The Polar System" class="comic-image" onclick="viewStaticComic(this)">
+                    <div class="comic-info">
+                        <div class="comic-title">極座標系統教學</div>
+                        <div class="comic-title" style="font-size: 0.95rem; color: #666; margin-top: 0.3rem;">The Polar Coordinate System</div>
+                        <div class="comic-date">學習主題：極座標、直角座標轉換</div>
+                        <div class="comic-actions">
+                            <button class="btn-view" onclick="viewStaticComic(document.querySelector('[alt=\'The Polar System\']'))">查看 View</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comic-card">
+                    <img src="images/polar-detective-rose.png" alt="The Polar Detective" class="comic-image" onclick="viewStaticComic(this)">
+                    <div class="comic-info">
+                        <div class="comic-title">極座標偵探與玫瑰之謎</div>
+                        <div class="comic-title" style="font-size: 0.95rem; color: #666; margin-top: 0.3rem;">The Polar Detective & The Mystery of the Rose</div>
+                        <div class="comic-date">學習主題：極座標對稱性、玫瑰曲線</div>
+                        <div class="comic-actions">
+                            <button class="btn-view" onclick="viewStaticComic(document.querySelector('[alt=\'The Polar Detective\']'))">查看 View</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -544,105 +556,12 @@
             event.target.closest('.tab-button').classList.add('active');
         }
 
-        // Comics management
-        let comics = JSON.parse(localStorage.getItem('mathComics')) || [];
-
-        // Upload area interactions
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-
-        uploadArea.addEventListener('click', () => fileInput.click());
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            handleFiles(e.dataTransfer.files);
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            handleFiles(e.target.files);
-        });
-
-        function handleFiles(files) {
-            Array.from(files).forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const comic = {
-                            id: Date.now() + Math.random(),
-                            title: file.name,
-                            image: e.target.result,
-                            date: new Date().toLocaleDateString('zh-TW')
-                        };
-                        comics.push(comic);
-                        saveComics();
-                        renderComics();
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-
-        function saveComics() {
-            localStorage.setItem('mathComics', JSON.stringify(comics));
-        }
-
-        function renderComics() {
-            const container = document.getElementById('comicsContainer');
-
-            if (comics.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <p><strong>尚未上傳任何漫畫</strong></p>
-                        <p>No comics uploaded yet</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = '<div class="comics-grid">' +
-                comics.map(comic => `
-                    <div class="comic-card">
-                        <img src="${comic.image}" alt="${comic.title}" class="comic-image">
-                        <div class="comic-info">
-                            <div class="comic-title">${comic.title}</div>
-                            <div class="comic-date">上傳日期：${comic.date}</div>
-                            <div class="comic-actions">
-                                <button class="btn-view" onclick="viewComic(${comic.id})">查看 View</button>
-                                <button class="btn-delete" onclick="deleteComic(${comic.id})">刪除 Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('') +
-            '</div>';
-        }
-
-        function viewComic(id) {
-            const comic = comics.find(c => c.id === id);
-            if (comic) {
-                document.getElementById('modalImage').src = comic.image;
-                document.getElementById('modalTitle').textContent = comic.title;
-                document.getElementById('modalDate').textContent = '上傳日期 | Upload Date: ' + comic.date;
-                document.getElementById('comicModal').classList.add('active');
-            }
-        }
-
-        function deleteComic(id) {
-            if (confirm('確定要刪除這個漫畫嗎？\nAre you sure you want to delete this comic?')) {
-                comics = comics.filter(c => c.id !== id);
-                saveComics();
-                renderComics();
-            }
+        // View static comic in modal
+        function viewStaticComic(imgElement) {
+            document.getElementById('modalImage').src = imgElement.src;
+            document.getElementById('modalTitle').textContent = imgElement.alt;
+            document.getElementById('modalDate').textContent = '';
+            document.getElementById('comicModal').classList.add('active');
         }
 
         function closeModal() {
@@ -656,8 +575,12 @@
             }
         });
 
-        // Initial render
-        renderComics();
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>
