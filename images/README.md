@@ -25,14 +25,15 @@ Please save the following three comic images to this folder:
   - Panel 3: 直角座標轉極座標
   - Panel 4: 方程式轉換（r = 2 cos θ 轉為圓的標準式）
 
-### 3. polar-detective-rose.png
+### 3. Polar Graph_Gemini_Generated_Image_35etya35etya35et.png
 - **標題 / Title**: 極座標偵探與玫瑰之謎 / The Polar Detective & The Mystery of the Rose
 - **內容 / Content**:
   - 四格漫畫，使用偵探故事形式
   - 教授極座標方程式 r = 4sin(3θ)
-  - 展示如何使用對稱性測試
+  - 展示如何使用對稱性測試（Symmetry Tests）
   - 說明玫瑰曲線（rose curve）的特性
   - 關於 Y 軸對稱性的數學驗證
+  - 展示如何用極軸對稱性和垂直軸對稱性來簡化繪圖
 
 ## File Format / 檔案格式
 
