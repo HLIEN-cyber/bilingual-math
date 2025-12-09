@@ -5,8 +5,8 @@ This folder contains the images for bilingual math comics.
 
 ## Required Images / 需要的圖片
 
-請將以下三個漫畫圖片保存到此資料夾：
-Please save the following three comic images to this folder:
+請將以下四個漫畫圖片保存到此資料夾：
+Please save the following four comic images to this folder:
 
 ### 1. doraemon-spatial-geometry.png
 - **標題 / Title**: 哆啦A夢的空間幾何冒險（從2D到3D） / Doraemon's Spatial Geometry Adventure (From 2D to 3D)
@@ -35,6 +35,15 @@ Please save the following three comic images to this folder:
   - 關於 Y 軸對稱性的數學驗證
   - 展示如何用極軸對稱性和垂直軸對稱性來簡化繪圖
 
+### 4. Parametric equ_Generated Image December 06, 2025 - 9_23AM.jpeg
+- **標題 / Title**: 參數方程式教學 / Parametric Equations Tutorial
+- **內容 / Content**:
+  - 介紹參數方程式的基本概念
+  - 展示如何使用參數 t 來表示曲線
+  - 說明參數方程式 x(t) 和 y(t) 的關係
+  - 參數方程式與一般方程式的轉換
+  - 實際應用範例與圖形繪製
+
 ## File Format / 檔案格式
 
 - 建議使用 PNG 格式以保持清晰度
@@ -44,12 +53,12 @@ Please save the following three comic images to this folder:
 
 ## Instructions / 使用說明
 
-1. 將三個漫畫圖片檔案保存到此 `images/` 資料夾
+1. 將四個漫畫圖片檔案保存到此 `images/` 資料夾
 2. 確保檔名完全符合上述要求
 3. 重新載入 `index.html` 即可查看漫畫
 
 ---
 
-1. Save the three comic image files to this `images/` folder
+1. Save the four comic image files to this `images/` folder
 2. Ensure filenames match exactly as specified above
 3. Reload `index.html` to view the comics
