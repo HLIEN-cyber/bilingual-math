@@ -870,123 +870,158 @@
             }
         });
 
-        // Vanta-style Animated Background
-        const canvas = document.getElementById('vanta-canvas');
-        const ctx = canvas.getContext('2d');
+        // Wave Background Canvas Animation
+        (() => {
+            const canvas = document.getElementById('vanta-canvas');
+            const ctx = canvas.getContext('2d', { alpha: false });
 
-        // Set canvas size
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-
-        // Particle system for animated geometric background
-        const particles = [];
-        const particleCount = 80;
-        const connectionDistance = 150;
-
-        // Tan color palette
-        const tanColors = [
-            'rgba(210, 180, 140, 0.6)',  // tan
-            'rgba(205, 170, 125, 0.5)',  // light tan
-            'rgba(160, 130, 109, 0.6)',  // medium tan
-            'rgba(139, 90, 60, 0.5)',    // brown tan
-            'rgba(244, 235, 224, 0.4)'   // light beige
-        ];
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.radius = Math.random() * 3 + 1;
-                this.color = tanColors[Math.floor(Math.random() * tanColors.length)];
+            // HiDPI support
+            function resize() {
+                const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                canvas.width = Math.floor(width * dpr);
+                canvas.height = Math.floor(height * dpr);
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             }
+            resize();
+            window.addEventListener('resize', resize, { passive: true });
 
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
+            // Color palette - soft pastel waves
+            const COLORS = {
+                skyTop: '#b8d4d2',
+                skyMid: '#d3dfd8',
+                skyBot: '#f1cfb4',
+                wave1: 'rgba(204,231,239,0.92)',
+                wave2: 'rgba(171,214,232,0.90)',
+                wave3: 'rgba(138,186,214,0.92)',
+                lineHi: 'rgba(255,255,255,0.65)',
+                lineSoft: 'rgba(255,255,255,0.25)'
+            };
 
-                // Bounce off edges
-                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            function drawBackground(w, h, t) {
+                // Sky gradient
+                const g = ctx.createLinearGradient(0, 0, 0, h);
+                g.addColorStop(0, COLORS.skyTop);
+                g.addColorStop(0.55, COLORS.skyMid);
+                g.addColorStop(1, COLORS.skyBot);
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, w, h);
 
-                // Keep within bounds
-                this.x = Math.max(0, Math.min(canvas.width, this.x));
-                this.y = Math.max(0, Math.min(canvas.height, this.y));
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-            }
-        }
-
-        // Create particles
-        for (let i = 0; i < particleCount; i++) {
-            particles.push(new Particle());
-        }
-
-        // Animation loop
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Update and draw particles
-            particles.forEach(particle => {
-                particle.update();
-                particle.draw();
-            });
-
-            // Draw connections
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-
-                    if (distance < connectionDistance) {
-                        const opacity = (1 - distance / connectionDistance) * 0.3;
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(139, 90, 60, ${opacity})`;
-                        ctx.lineWidth = 1;
-                        ctx.stroke();
-
-                        // Draw triangles for some connections
-                        if (distance < connectionDistance * 0.6 && Math.random() > 0.95) {
-                            for (let k = j + 1; k < particles.length; k++) {
-                                const dx2 = particles[i].x - particles[k].x;
-                                const dy2 = particles[i].y - particles[k].y;
-                                const distance2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-
-                                if (distance2 < connectionDistance * 0.6) {
-                                    ctx.beginPath();
-                                    ctx.moveTo(particles[i].x, particles[i].y);
-                                    ctx.lineTo(particles[j].x, particles[j].y);
-                                    ctx.lineTo(particles[k].x, particles[k].y);
-                                    ctx.closePath();
-                                    ctx.fillStyle = `rgba(210, 180, 140, ${opacity * 0.15})`;
-                                    ctx.fill();
-                                    ctx.strokeStyle = `rgba(160, 130, 109, ${opacity * 0.4})`;
-                                    ctx.lineWidth = 0.5;
-                                    ctx.stroke();
-                                }
-                            }
-                        }
-                    }
+                // Subtle diagonal light streaks
+                ctx.save();
+                ctx.globalAlpha = 0.55;
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 3; i++) {
+                    const phase = t * 0.25 + i * 1.2;
+                    const y = h * (0.45 + 0.07 * Math.sin(phase));
+                    ctx.strokeStyle = i === 0 ? COLORS.lineHi : COLORS.lineSoft;
+                    ctx.beginPath();
+                    ctx.moveTo(w * 0.20, y);
+                    ctx.quadraticCurveTo(w * 0.55, y - h * 0.10, w * 0.85, y - h * 0.02);
+                    ctx.stroke();
                 }
+                ctx.restore();
             }
 
-            requestAnimationFrame(animate);
-        }
+            function wavePath({ w, h, baseY, amp, tilt, seed, t, bumps = 2.8 }) {
+                // Build a smooth multi-curve wave using control points
+                const p = [];
+                const segments = 5;
+                for (let i = 0; i <= segments; i++) {
+                    const x = (w / segments) * i;
+                    const k = (i / segments) * Math.PI * bumps;
+                    const n = Math.sin(k + seed + t) * 0.7 + Math.sin(k * 0.55 - seed * 1.3 + t * 0.7) * 0.3;
+                    const y = baseY + n * amp + (i - segments / 2) * tilt;
+                    p.push({ x, y });
+                }
 
-        animate();
+                // Smooth spline using quadratic curves
+                ctx.beginPath();
+                ctx.moveTo(0, h);
+                ctx.lineTo(p[0].x, p[0].y);
+
+                for (let i = 1; i < p.length - 1; i++) {
+                    const cx = p[i].x;
+                    const cy = p[i].y;
+                    const nx = (p[i].x + p[i + 1].x) / 2;
+                    const ny = (p[i].y + p[i + 1].y) / 2;
+                    ctx.quadraticCurveTo(cx, cy, nx, ny);
+                }
+                ctx.quadraticCurveTo(p[p.length - 1].x, p[p.length - 1].y, w, p[p.length - 1].y);
+                ctx.lineTo(w, h);
+                ctx.closePath();
+            }
+
+            function drawWaves(w, h, t) {
+                const drift = t * 0.6;
+
+                // Back wave
+                wavePath({
+                    w, h,
+                    baseY: h * 0.64,
+                    amp: h * 0.055,
+                    tilt: -h * 0.010,
+                    seed: 1.2,
+                    t: drift,
+                    bumps: 2.6
+                });
+                ctx.fillStyle = COLORS.wave3;
+                ctx.fill();
+
+                // Mid wave
+                wavePath({
+                    w, h,
+                    baseY: h * 0.70,
+                    amp: h * 0.050,
+                    tilt: -h * 0.006,
+                    seed: 2.1,
+                    t: drift * 1.05,
+                    bumps: 2.8
+                });
+                ctx.fillStyle = COLORS.wave2;
+                ctx.fill();
+
+                // Front wave
+                wavePath({
+                    w, h,
+                    baseY: h * 0.78,
+                    amp: h * 0.042,
+                    tilt: -h * 0.002,
+                    seed: 3.2,
+                    t: drift * 1.1,
+                    bumps: 3.0
+                });
+                ctx.fillStyle = COLORS.wave1;
+                ctx.fill();
+
+                // Soft highlight curve along top of front wave
+                ctx.save();
+                ctx.globalAlpha = 0.55;
+                ctx.strokeStyle = 'rgba(255,255,255,0.65)';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                const y0 = h * 0.78 + Math.sin(drift * 1.1 + 3.2) * h * 0.012;
+                ctx.moveTo(w * 0.02, y0);
+                ctx.bezierCurveTo(w * 0.28, y0 - h * 0.05, w * 0.55, y0 + h * 0.02, w * 0.98, y0 - h * 0.02);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            let start = performance.now();
+            function frame(now) {
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+                const t = (now - start) / 1000;
+
+                drawBackground(w, h, t);
+                drawWaves(w, h, t);
+
+                requestAnimationFrame(frame);
+            }
+
+            requestAnimationFrame(frame);
+        })();
     </script>
 </body>
 </html>
