@@ -439,13 +439,25 @@
         .math-symbol {
             position: absolute;
             font-size: 3rem;
-            color: rgba(139, 90, 60, 0.35);
+            color: rgba(139, 90, 60, 0.6);
             font-weight: bold;
             transition: transform 0.1s ease-out;
-            animation: float 6s ease-in-out infinite;
+            animation: float3D 6s ease-in-out infinite;
+            transform-style: preserve-3d;
+            perspective: 1000px;
             text-shadow:
-                2px 2px 4px rgba(0, 0, 0, 0.1),
-                0 0 30px rgba(139, 90, 60, 0.15);
+                /* 3D depth layers */
+                1px 1px 0 rgba(101, 67, 33, 0.5),
+                2px 2px 0 rgba(101, 67, 33, 0.45),
+                3px 3px 0 rgba(101, 67, 33, 0.4),
+                4px 4px 0 rgba(101, 67, 33, 0.35),
+                5px 5px 0 rgba(101, 67, 33, 0.3),
+                6px 6px 0 rgba(101, 67, 33, 0.25),
+                /* Highlight */
+                -1px -1px 2px rgba(255, 255, 255, 0.3),
+                /* Shadow */
+                0 8px 15px rgba(0, 0, 0, 0.25),
+                0 12px 30px rgba(139, 90, 60, 0.2);
         }
 
         @keyframes float {
@@ -579,13 +591,29 @@
             width: 120px;
             height: 120px;
             background:
-                linear-gradient(145deg, rgba(210, 180, 140, 0.85) 0%, rgba(139, 90, 60, 0.9) 100%);
+                linear-gradient(145deg, rgba(210, 180, 140, 0.9) 0%, rgba(160, 130, 109, 0.85) 50%, rgba(139, 90, 60, 0.95) 100%);
             clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
             box-shadow:
-                inset -8px -8px 16px rgba(101, 67, 33, 0.35),
-                inset 8px 8px 16px rgba(244, 235, 224, 0.5),
-                0 20px 40px rgba(139, 90, 60, 0.3),
-                0 5px 15px rgba(0, 0, 0, 0.15);
+                /* Inner shadows for depth */
+                inset -10px -10px 20px rgba(101, 67, 33, 0.5),
+                inset 10px 10px 20px rgba(244, 235, 224, 0.6),
+                inset -3px -3px 8px rgba(101, 67, 33, 0.3),
+                /* Multiple shadow layers for 3D effect */
+                0 8px 16px rgba(139, 90, 60, 0.4),
+                0 16px 32px rgba(139, 90, 60, 0.3),
+                0 24px 48px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .shape-pentagon::before {
+            content: '';
+            position: absolute;
+            top: 5%;
+            left: 10%;
+            width: 40%;
+            height: 40%;
+            background: radial-gradient(ellipse at 30% 30%, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
         }
 
         .shape-star {
@@ -626,6 +654,130 @@
                 0 5px 15px rgba(0, 0, 0, 0.15);
         }
 
+        /* Large 3D Cube */
+        .shape-cube {
+            width: 180px;
+            height: 180px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotateCube 12s ease-in-out infinite;
+        }
+
+        @keyframes rotateCube {
+            0%, 100% {
+                transform: translateY(0px) rotateX(25deg) rotateY(25deg);
+            }
+            50% {
+                transform: translateY(-25px) rotateX(35deg) rotateY(35deg);
+            }
+        }
+
+        .shape-cube::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(210, 180, 140, 0.9) 0%, rgba(139, 90, 60, 0.85) 100%);
+            border-radius: 8px;
+            box-shadow:
+                inset -15px -15px 30px rgba(101, 67, 33, 0.5),
+                inset 15px 15px 30px rgba(244, 235, 224, 0.6),
+                0 25px 50px rgba(139, 90, 60, 0.4),
+                0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .shape-cube::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(225deg, rgba(160, 130, 109, 0.75) 0%, rgba(101, 67, 33, 0.7) 100%);
+            border-radius: 8px;
+            transform: translateX(20px) translateY(20px) translateZ(-20px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            z-index: -1;
+        }
+
+        /* Regular Hexagon - 正六邊形 (equal sides, equal angles) */
+        .shape-regular-hexagon {
+            width: 140px;
+            height: 140px;
+            background:
+                linear-gradient(135deg, rgba(210, 180, 140, 0.9) 0%, rgba(160, 130, 109, 0.85) 50%, rgba(139, 90, 60, 0.9) 100%);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            box-shadow:
+                inset -10px -10px 20px rgba(101, 67, 33, 0.4),
+                inset 10px 10px 20px rgba(244, 235, 224, 0.6),
+                0 20px 40px rgba(139, 90, 60, 0.3),
+                0 8px 16px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .shape-regular-hexagon::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 15%;
+            width: 35%;
+            height: 35%;
+            background: radial-gradient(ellipse at 30% 30%, rgba(255, 255, 255, 0.45) 0%, transparent 70%);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+
+        /* Equilateral Non-Equiangular Hexagon - 等邊非等角六邊形 */
+        .shape-equilateral-hexagon {
+            width: 130px;
+            height: 130px;
+            background:
+                linear-gradient(145deg, rgba(205, 170, 125, 0.9) 0%, rgba(160, 130, 109, 0.85) 50%, rgba(139, 90, 60, 0.9) 100%);
+            /* All sides equal length but angles differ */
+            clip-path: polygon(50% 0%, 90% 20%, 90% 70%, 50% 100%, 10% 70%, 10% 20%);
+            box-shadow:
+                inset -10px -10px 20px rgba(101, 67, 33, 0.45),
+                inset 10px 10px 20px rgba(244, 235, 224, 0.55),
+                0 18px 36px rgba(139, 90, 60, 0.35),
+                0 8px 16px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .shape-equilateral-hexagon::before {
+            content: '';
+            position: absolute;
+            top: 8%;
+            left: 12%;
+            width: 38%;
+            height: 38%;
+            background: radial-gradient(ellipse at 25% 25%, rgba(255, 255, 255, 0.4) 0%, transparent 65%);
+            clip-path: polygon(50% 0%, 90% 20%, 90% 70%, 50% 100%, 10% 70%, 10% 20%);
+        }
+
+        /* Equiangular Non-Equilateral Hexagon - 等角非等邊六邊形 */
+        .shape-equiangular-hexagon {
+            width: 135px;
+            height: 120px;
+            background:
+                linear-gradient(150deg, rgba(215, 185, 145, 0.9) 0%, rgba(160, 130, 109, 0.85) 50%, rgba(139, 90, 60, 0.9) 100%);
+            /* All angles equal (120°) but sides have different lengths */
+            clip-path: polygon(35% 0%, 65% 0%, 100% 30%, 85% 80%, 15% 80%, 0% 30%);
+            box-shadow:
+                inset -9px -9px 18px rgba(101, 67, 33, 0.4),
+                inset 9px 9px 18px rgba(244, 235, 224, 0.6),
+                0 18px 36px rgba(139, 90, 60, 0.32),
+                0 8px 16px rgba(0, 0, 0, 0.18);
+            position: relative;
+        }
+
+        .shape-equiangular-hexagon::before {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 18%;
+            width: 32%;
+            height: 35%;
+            background: radial-gradient(ellipse at 28% 28%, rgba(255, 255, 255, 0.42) 0%, transparent 68%);
+            clip-path: polygon(35% 0%, 65% 0%, 100% 30%, 85% 80%, 15% 80%, 0% 30%);
+        }
+
         /* Position geometric shapes - Right side concentrated */
         .geometric-shape:nth-of-type(11) { top: 8%; left: 70%; animation-delay: 0.3s; }
         .geometric-shape:nth-of-type(12) { top: 18%; left: 85%; animation-delay: 1.3s; }
@@ -645,6 +797,23 @@
         .geometric-shape:nth-of-type(24) { top: 35%; left: 8%; animation-delay: 0.9s; }
         .geometric-shape:nth-of-type(25) { top: 60%; left: 2%; animation-delay: 1.7s; }
         .geometric-shape:nth-of-type(26) { top: 88%; left: 6%; animation-delay: 1.2s; }
+
+        /* Large 3D Cubes - scattered positions */
+        .geometric-shape:nth-of-type(27) { top: 15%; left: 50%; animation-delay: 0.6s; }
+        .geometric-shape:nth-of-type(28) { top: 55%; left: 25%; animation-delay: 1.8s; }
+        .geometric-shape:nth-of-type(29) { top: 82%; left: 85%; animation-delay: 2.2s; }
+
+        /* Regular Hexagons - 正六邊形 */
+        .geometric-shape:nth-of-type(30) { top: 25%; left: 78%; animation-delay: 1.5s; }
+        .geometric-shape:nth-of-type(31) { top: 72%; left: 15%; animation-delay: 2.0s; }
+
+        /* Equilateral Non-Equiangular Hexagons - 等邊非等角 */
+        .geometric-shape:nth-of-type(32) { top: 42%; left: 82%; animation-delay: 1.1s; }
+        .geometric-shape:nth-of-type(33) { top: 90%; left: 45%; animation-delay: 2.5s; }
+
+        /* Equiangular Non-Equilateral Hexagons - 等角非等邊 */
+        .geometric-shape:nth-of-type(34) { top: 8%; left: 35%; animation-delay: 0.8s; }
+        .geometric-shape:nth-of-type(35) { top: 65%; left: 55%; animation-delay: 1.9s; }
 
         /* Decorative Curves */
         .decorative-curve {
@@ -806,6 +975,17 @@
         <div class="geometric-shape shape-circle" data-speed="0.48"></div>
         <div class="geometric-shape shape-diamond" data-speed="0.44"></div>
         <div class="geometric-shape shape-square" data-speed="0.56"></div>
+        <!-- Large 3D Cubes -->
+        <div class="geometric-shape shape-cube" data-speed="0.35"></div>
+        <div class="geometric-shape shape-cube" data-speed="0.55"></div>
+        <div class="geometric-shape shape-cube" data-speed="0.42"></div>
+        <!-- Different Types of Hexagons -->
+        <div class="geometric-shape shape-regular-hexagon" data-speed="0.5"></div>
+        <div class="geometric-shape shape-regular-hexagon" data-speed="0.6"></div>
+        <div class="geometric-shape shape-equilateral-hexagon" data-speed="0.47"></div>
+        <div class="geometric-shape shape-equilateral-hexagon" data-speed="0.58"></div>
+        <div class="geometric-shape shape-equiangular-hexagon" data-speed="0.52"></div>
+        <div class="geometric-shape shape-equiangular-hexagon" data-speed="0.63"></div>
         <!-- Decorative Curves -->
         <div class="decorative-curve curve-1" data-speed="0.3"></div>
         <div class="decorative-curve curve-2" data-speed="0.25"></div>
