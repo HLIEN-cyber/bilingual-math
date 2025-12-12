@@ -14,14 +14,14 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
             line-height: 1.6;
-            background: #E8DDCE;
+            background: #C85A8E;
             min-height: 100vh;
             padding: 2rem;
             position: relative;
             overflow-x: hidden;
         }
 
-        /* Coordinate Grid Background */
+        /* Geometric Tessellation Background */
         body::before {
             content: '';
             position: fixed;
@@ -29,10 +29,16 @@
             left: 0;
             width: 100%;
             height: 100%;
+            background-color: #C85A8E;
             background-image:
-                linear-gradient(rgba(139, 92, 70, 0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(139, 92, 70, 0.08) 1px, transparent 1px);
-            background-size: 50px 50px;
+                linear-gradient(30deg, #B84C7E 12%, transparent 12.5%, transparent 87%, #B84C7E 87.5%, #B84C7E),
+                linear-gradient(150deg, #B84C7E 12%, transparent 12.5%, transparent 87%, #B84C7E 87.5%, #B84C7E),
+                linear-gradient(30deg, #B84C7E 12%, transparent 12.5%, transparent 87%, #B84C7E 87.5%, #B84C7E),
+                linear-gradient(150deg, #B84C7E 12%, transparent 12.5%, transparent 87%, #B84C7E 87.5%, #B84C7E),
+                linear-gradient(60deg, #D4699E 25%, transparent 25.5%, transparent 75%, #D4699E 75%, #D4699E),
+                linear-gradient(60deg, #D4699E 25%, transparent 25.5%, transparent 75%, #D4699E 75%, #D4699E);
+            background-size: 80px 140px;
+            background-position: 0 0, 0 0, 40px 70px, 40px 70px, 0 0, 40px 70px;
             pointer-events: none;
             z-index: 0;
         }
@@ -44,7 +50,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(232, 221, 206, 0.5) 100%);
+            background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(200, 90, 142, 0.3) 100%);
             pointer-events: none;
             z-index: 0;
         }
