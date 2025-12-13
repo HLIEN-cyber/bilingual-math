@@ -169,46 +169,64 @@
         }
 
         .vocab-link {
+            position: relative;
             display: flex;
             align-items: center;
             padding: 1.5rem;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            border-radius: 12px;
+            background:
+                linear-gradient(135deg, #e5f0ff 0%, #f2e8dd 60%, #f8e1cd 100%),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 400' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='sky' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23e9f5ff'/%3E%3Cstop offset='70%25' stop-color='%23f9f1e6'/%3E%3Cstop offset='100%25' stop-color='%23f6e5d6'/%3E%3C/linearGradient%3E%3ClinearGradient id='wave1' x1='0' x2='1' y1='0' y2='0'%3E%3Cstop offset='0%25' stop-color='%23d5eafe' stop-opacity='0.9'/%3E%3Cstop offset='100%25' stop-color='%23b3d6fd' stop-opacity='0.7'/%3E%3C/linearGradient%3E%3ClinearGradient id='wave2' x1='0' x2='1' y1='0' y2='0'%3E%3Cstop offset='0%25' stop-color='%23c5e4ff' stop-opacity='0.8'/%3E%3Cstop offset='100%25' stop-color='%23d9f1ff' stop-opacity='0.5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='400' fill='url(%23sky)'/%3E%3Cpath d='M0 260c120 40 220 60 320 40s200-80 320-60 160 80 160 80v80H0Z' fill='url(%23wave1)'/%3E%3Cpath d='M0 300c140 50 240 60 340 40s170-80 290-70 170 70 170 70v60H0Z' fill='url(%23wave2)'/%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: center;
+            border-radius: 16px;
             text-decoration: none;
-            color: #333;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            color: #ffffff;
+            transition: all 0.35s ease;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+            overflow: hidden;
+        }
+
+        .vocab-link::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.45), transparent 40%),
+                        radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.35), transparent 45%);
+            pointer-events: none;
         }
 
         .vocab-link:hover {
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            background: linear-gradient(135deg, #8B5A3C 0%, #A0826D 100%);
-            color: white;
+            transform: translateY(-4px);
+            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.22);
+            color: #ffffff;
         }
 
         .vocab-number {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
-            background: white;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
             border-radius: 50%;
             font-weight: bold;
             font-size: 1.2rem;
             margin-right: 1.5rem;
-            color: #8B5A3C;
+            color: #6b4a3a;
             flex-shrink: 0;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
         }
 
         .vocab-link:hover .vocab-number {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            background: rgba(255, 255, 255, 0.95);
+            color: #5a3d2f;
         }
 
         .vocab-title {
             font-size: 1.3rem;
-            font-weight: 600;
+            font-weight: 700;
+            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.22);
         }
 
         /* Comics Section Styles */
