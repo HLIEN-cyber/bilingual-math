@@ -97,6 +97,10 @@
             background-position: center;
             border-bottom: 2px solid rgba(139, 90, 60, 0.2);
             box-shadow: inset 0 -8px 12px rgba(255, 255, 255, 0.6);
+            overflow-x: auto;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            scroll-snap-type: x proximity;
         }
 
         .tab-button {
@@ -491,6 +495,9 @@
             .tab-button {
                 padding: 1rem;
                 font-size: 1rem;
+                flex: 0 0 80%;
+                min-width: 220px;
+                scroll-snap-align: start;
             }
 
             .vocab-link {
