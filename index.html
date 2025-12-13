@@ -64,6 +64,7 @@
             padding: 3rem 2rem;
             text-align: center;
             position: relative;
+            background-position: center calc(50% + var(--parallax-bg, 0px));
         }
 
         .header-footer {
@@ -81,11 +82,13 @@
             font-size: 2.5rem;
             margin-bottom: 0.5rem;
             font-weight: 700;
+            will-change: transform;
         }
 
         .subtitle {
             font-size: 1.2rem;
             opacity: 0.9;
+            will-change: transform;
         }
 
         .tabs {
@@ -101,6 +104,34 @@
             gap: 0.5rem;
             padding: 0.5rem;
             scroll-snap-type: x proximity;
+            position: relative;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .tabs::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='160' viewBox='0 0 1200 160'%3E%3Cg stroke='%238b5a3c' stroke-width='1' stroke-opacity='0.38' fill='none' stroke-linecap='round'%3E%3Cline x1='80' y1='40' x2='210' y2='110'/%3E%3Cline x1='210' y1='110' x2='360' y2='35'/%3E%3Cline x1='360' y1='35' x2='520' y2='90'/%3E%3Cline x1='520' y1='90' x2='680' y2='45'/%3E%3Cline x1='820' y1='35' x2='930' y2='120'/%3E%3Cline x1='930' y1='120' x2='1080' y2='55'/%3E%3Cline x1='1080' y1='55' x2='1180' y2='100'/%3E%3C/g%3E%3Cg fill='%23a0826d' fill-opacity='0.5'%3E%3Ccircle cx='80' cy='40' r='4'/%3E%3Ccircle cx='210' cy='110' r='5'/%3E%3Ccircle cx='360' cy='35' r='4'/%3E%3Ccircle cx='520' cy='90' r='6'/%3E%3Ccircle cx='680' cy='45' r='4'/%3E%3Ccircle cx='820' cy='35' r='5'/%3E%3Ccircle cx='930' cy='120' r='4'/%3E%3Ccircle cx='1080' cy='55' r='6'/%3E%3Ccircle cx='1180' cy='100' r='4'/%3E%3Ccircle cx='140' cy='65' r='3'/%3E%3Ccircle cx='440' cy='120' r='3'/%3E%3Ccircle cx='740' cy='110' r='3'/%3E%3Ccircle cx='1000' cy='30' r='3'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: center;
+            opacity: 0.5;
+            pointer-events: none;
+            mix-blend-mode: multiply;
+        }
+
+        .tab-tip {
+            margin: 0.25rem 0 1rem;
+            text-align: center;
+            color: #5D4037;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px dashed rgba(93, 64, 55, 0.3);
+            border-radius: 10px;
+            padding: 0.5rem 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
         }
 
         .tab-button {
@@ -551,6 +582,8 @@
             </button>
         </div>
 
+        <div class="tab-tip">滑動檢視不同應用｜Slide to check different applications</div>
+
         <div id="vocab-tab" class="tab-content active">
             <div class="intro">
                 <p>數學詞彙中英對照學習資源</p>
@@ -914,6 +947,36 @@
                 closeModal();
             }
         });
+
+        // Parallax interaction for header content and background
+        const header = document.querySelector('header');
+        const headerTitle = header.querySelector('h1');
+        const headerSubtitle = header.querySelector('.subtitle');
+        let ticking = false;
+
+        function updateParallaxValues() {
+            const scrollY = window.scrollY;
+            const intensity = window.innerWidth <= 768 ? 0.45 : 0.25;
+            const bgShift = -scrollY * intensity;
+            const contentShift = scrollY * 0.12;
+
+            header.style.setProperty('--parallax-bg', `${bgShift}px`);
+            headerTitle.style.transform = `translateY(${contentShift * -0.35}px)`;
+            headerSubtitle.style.transform = `translateY(${contentShift * -0.22}px)`;
+        }
+
+        function handleScrollParallax() {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    updateParallaxValues();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }
+
+        window.addEventListener('scroll', handleScrollParallax, { passive: true });
+        updateParallaxValues();
 
         // Vanta-style Animated Background
         const canvas = document.getElementById('vanta-canvas');
