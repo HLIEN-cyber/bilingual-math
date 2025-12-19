@@ -498,6 +498,16 @@
                     </div>
 
                     <div className="main-content">
+                        <div className="intro">
+                            <p>
+                                <strong>📊 可視化說明：</strong><br />
+                                這個氣泡圖展示了小說與雙語數學部分推薦的10本書籍的藍思閱讀分級、頁數和評分關係。
+                                X軸代表藍思閱讀分級 Lexile Level（650L-1000L），Y軸代表頁數（0-500頁），
+                                氣泡的大小代表書籍評分（評分越高，氣泡越大）。
+                                將滑鼠懸停在氣泡上可以查看詳細資訊。
+                            </p>
+                        </div>
+
                         <div className="chart-container">
                             <BubbleChart data={booksData} />
                         </div>
