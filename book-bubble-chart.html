@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>書籍閱讀分級與頁數對比圖 | Book Lexile Level & Pages Bubble Chart</title>
+
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel Standalone for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #F4EBE0 0%, #E8DDD1 50%, #F4EBE0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #root {
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(160, 130, 109, 0.85) 0%, rgba(210, 105, 30, 0.85) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .intro {
+            background: linear-gradient(135deg, #F5EBE0 0%, #EFE4D7 100%);
+            border-left: 4px solid #8B5A3C;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #F5EBE0 0%, #EFE4D7 100%);
+            border-radius: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid #333;
+        }
+
+        .legend-text {
+            font-size: 0.9rem;
+            color: #333;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            pointer-events: none;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            z-index: 1000;
+            max-width: 250px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .chart-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // 书籍数据
+        const booksData = [
+            {
+                title: "In Five Years",
+                author: "Rebecca Serle",
+                lexile: 800,
+                rating: 3.8,
+                pages: 255,
+                color: "#FF6B6B"
+            },
+            {
+                title: "Project Hail Mary",
+                author: "Andy Weir",
+                lexile: 950,
+                rating: 4.6,
+                pages: 476,
+                color: "#4ECDC4"
+            },
+            {
+                title: "Hidden Pictures",
+                author: "Jason Rekulak",
+                lexile: 750,
+                rating: 4.1,
+                pages: 370,
+                color: "#45B7D1"
+            },
+            {
+                title: "Yellowface",
+                author: "R.F. Kuang",
+                lexile: 820,
+                rating: 4.0,
+                pages: 336,
+                color: "#F9D71C"
+            },
+            {
+                title: "The Love Hypothesis",
+                author: "Ali Hazelwood",
+                lexile: 800,
+                rating: 4.0,
+                pages: 384,
+                color: "#FF85A6"
+            },
+            {
+                title: "Tomorrow, and Tomorrow, and Tomorrow",
+                author: "Gabrielle Zevin",
+                lexile: 900,
+                rating: 4.3,
+                pages: 416,
+                color: "#95E1D3"
+            },
+            {
+                title: "Anxious People",
+                author: "Fredrik Backman",
+                lexile: 780,
+                rating: 4.2,
+                pages: 352,
+                color: "#A8E6CF"
+            },
+            {
+                title: "Remarkably Bright Creatures",
+                author: "Shelby Van Pelt",
+                lexile: 760,
+                rating: 4.4,
+                pages: 368,
+                color: "#FFD3B6"
+            },
+            {
+                title: "Eleven Numbers",
+                author: "Lee Child",
+                lexile: 700,
+                rating: 3.9,
+                pages: 60,
+                color: "#AA96DA"
+            },
+            {
+                title: "Teacher",
+                author: "Freida McFadden",
+                lexile: 730,
+                rating: 3.7,
+                pages: 336,
+                color: "#FCBAD3"
+            }
+        ];
+
+        // 气泡图组件
+        const BubbleChart = ({ data, width = 1000, height = 600 }) => {
+            const [tooltip, setTooltip] = useState(null);
+            const svgRef = useRef(null);
+
+            const padding = { top: 60, right: 100, bottom: 80, left: 80 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            const lexileMin = 650;
+            const lexileMax = 1000;
+            const pagesMin = 0;
+            const pagesMax = 500;
+
+            const xScale = (lexile) => padding.left + ((lexile - lexileMin) / (lexileMax - lexileMin)) * chartWidth;
+            const yScale = (pages) => height - padding.bottom - ((pages - pagesMin) / (pagesMax - pagesMin)) * chartHeight;
+
+            // 评分范围（用于气泡大小）
+            const ratingMin = 3.5;
+            const ratingMax = 5.0;
+            const radiusScale = (rating) => 10 + ((rating - ratingMin) / (ratingMax - ratingMin)) * 40;
+
+            const handleMouseEnter = (book, event) => {
+                const rect = svgRef.current.getBoundingClientRect();
+                setTooltip({
+                    book,
+                    x: event.clientX - rect.left,
+                    y: event.clientY - rect.top
+                });
+            };
+
+            const handleMouseLeave = () => {
+                setTooltip(null);
+            };
+
+            return (
+                <div style={{ position: 'relative' }}>
+                    <svg ref={svgRef} width={width} height={height} style={{ background: '#f7fafc', borderRadius: '12px' }}>
+                        {/* X轴网格线和标签 */}
+                        {[650, 700, 750, 800, 850, 900, 950, 1000].map((lexile, i) => {
+                            const x = xScale(lexile);
+                            return (
+                                <g key={`x-${i}`}>
+                                    <line
+                                        x1={x}
+                                        y1={padding.top}
+                                        x2={x}
+                                        y2={height - padding.bottom}
+                                        stroke="#cbd5e0"
+                                        strokeDasharray="3 3"
+                                    />
+                                    <text
+                                        x={x}
+                                        y={height - padding.bottom + 25}
+                                        textAnchor="middle"
+                                        fontSize="13"
+                                        fill="#4a5568"
+                                        fontWeight="600"
+                                    >
+                                        {lexile}L
+                                    </text>
+                                </g>
+                            );
+                        })}
+
+                        {/* Y轴网格线和标签 */}
+                        {[0, 100, 200, 300, 400, 500].map((pages, i) => {
+                            const y = yScale(pages);
+                            return (
+                                <g key={`y-${i}`}>
+                                    <line
+                                        x1={padding.left}
+                                        y1={y}
+                                        x2={width - padding.right}
+                                        y2={y}
+                                        stroke="#cbd5e0"
+                                        strokeDasharray="3 3"
+                                    />
+                                    <text
+                                        x={padding.left - 15}
+                                        y={y + 5}
+                                        textAnchor="end"
+                                        fontSize="13"
+                                        fill="#4a5568"
+                                        fontWeight="600"
+                                    >
+                                        {pages}
+                                    </text>
+                                </g>
+                            );
+                        })}
+
+                        {/* 座标轴 */}
+                        <line
+                            x1={padding.left}
+                            y1={height - padding.bottom}
+                            x2={width - padding.right}
+                            y2={height - padding.bottom}
+                            stroke="#2d3748"
+                            strokeWidth="3"
+                        />
+                        <line
+                            x1={padding.left}
+                            y1={padding.top}
+                            x2={padding.left}
+                            y2={height - padding.bottom}
+                            stroke="#2d3748"
+                            strokeWidth="3"
+                        />
+
+                        {/* 气泡 */}
+                        {data.map((book, i) => {
+                            const cx = xScale(book.lexile);
+                            const cy = yScale(book.pages);
+                            const r = radiusScale(book.rating);
+
+                            return (
+                                <g key={i}>
+                                    <circle
+                                        cx={cx}
+                                        cy={cy}
+                                        r={r}
+                                        fill={book.color}
+                                        fillOpacity="0.6"
+                                        stroke="#2d3748"
+                                        strokeWidth="2"
+                                        style={{ cursor: 'pointer', transition: 'all 0.3s' }}
+                                        onMouseEnter={(e) => handleMouseEnter(book, e)}
+                                        onMouseLeave={handleMouseLeave}
+                                    />
+                                    <text
+                                        x={cx}
+                                        y={cy + 5}
+                                        textAnchor="middle"
+                                        fontSize="11"
+                                        fontWeight="700"
+                                        fill="#2d3748"
+                                        pointerEvents="none"
+                                    >
+                                        {book.rating}
+                                    </text>
+                                </g>
+                            );
+                        })}
+
+                        {/* X轴标签 */}
+                        <text
+                            x={width / 2}
+                            y={height - 20}
+                            textAnchor="middle"
+                            fontSize="16"
+                            fontWeight="700"
+                            fill="#2d3748"
+                        >
+                            藍思閱讀分級 Lexile Level
+                        </text>
+
+                        {/* Y轴标签 */}
+                        <text
+                            x={25}
+                            y={height / 2}
+                            textAnchor="middle"
+                            fontSize="16"
+                            fontWeight="700"
+                            fill="#2d3748"
+                            transform={`rotate(-90, 25, ${height / 2})`}
+                        >
+                            頁數 Pages
+                        </text>
+
+                        {/* 图表标题 */}
+                        <text
+                            x={width / 2}
+                            y={30}
+                            textAnchor="middle"
+                            fontSize="20"
+                            fontWeight="700"
+                            fill="#2d3748"
+                        >
+                            📖 書籍閱讀分級與頁數對比圖（氣泡大小 = 評分）
+                        </text>
+                    </svg>
+
+                    {/* 悬浮提示框 */}
+                    {tooltip && (
+                        <div
+                            className="tooltip"
+                            style={{
+                                left: tooltip.x + 15,
+                                top: tooltip.y - 50
+                            }}
+                        >
+                            <strong>{tooltip.book.title}</strong><br />
+                            作者: {tooltip.book.author}<br />
+                            Lexile: {tooltip.book.lexile}L<br />
+                            頁數: {tooltip.book.pages}<br />
+                            評分: {tooltip.book.rating}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 主应用组件
+        const BookBubbleChartApp = () => {
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>書籍閱讀分級與頁數對比圖</h1>
+                        <p className="subtitle">Book Lexile Level & Pages Bubble Chart</p>
+                    </div>
+
+                    <div className="main-content">
+                        <div className="intro">
+                            <p>
+                                <strong>📊 可視化說明：</strong><br />
+                                這個氣泡圖展示了小說與雙語數學部分推薦的10本書籍的藍思閱讀分級、頁數和評分關係。
+                                X軸代表藍思閱讀分級 Lexile Level（650L-1000L），Y軸代表頁數（0-500頁），
+                                氣泡的大小代表書籍評分（評分越高，氣泡越大）。
+                                將滑鼠懸停在氣泡上可以查看詳細資訊。
+                            </p>
+                        </div>
+
+                        <div className="chart-container">
+                            <BubbleChart data={booksData} />
+                        </div>
+
+                        <div className="legend">
+                            {booksData.map((book, i) => (
+                                <div key={i} className="legend-item">
+                                    <div
+                                        className="legend-color"
+                                        style={{ backgroundColor: book.color }}
+                                    ></div>
+                                    <span className="legend-text">
+                                        <strong>{book.title}</strong> (Lexile: {book.lexile}L, 頁數: {book.pages}, 評分: {book.rating})
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 渲染应用
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<BookBubbleChartApp />);
+    </script>
+</body>
+</html>
