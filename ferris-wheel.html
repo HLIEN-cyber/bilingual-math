@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摩天輪上的三角函數 | Trigonometric Secrets on the Ferris Wheel</title>
+
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Recharts -->
+    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
+
+    <!-- Babel Standalone for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #F4EBE0 0%, #E8DDD1 50%, #F4EBE0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #root {
+            min-height: 100vh;
+        }
+
+        /* Custom Slider Styles */
+        .slider-container {
+            width: 100%;
+            position: relative;
+        }
+
+        .slider-track {
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .slider-input {
+            width: 100%;
+            height: 8px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            outline: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .slider-input::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .slider-input::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .slider-input::-moz-range-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Label } = Recharts;
+
+        // Custom Slider Component
+        const Slider = ({ value, onValueChange, min, max, step }) => {
+            return (
+                <div className="slider-container">
+                    <div className="slider-track"></div>
+                    <input
+                        type="range"
+                        className="slider-input"
+                        value={value[0]}
+                        onChange={(e) => onValueChange([parseFloat(e.target.value)])}
+                        min={min}
+                        max={max}
+                        step={step}
+                    />
+                </div>
+            );
+        };
+
+        const FerrisWheelSimulator = () => {
+            const [time, setTime] = useState(0);
+            const [isRunning, setIsRunning] = useState(false);
+            const [plotData, setPlotData] = useState([]);
+            const [currentHeight, setCurrentHeight] = useState(0);
+            const [radius, setRadius] = useState(20);
+            const [baseHeight, setBaseHeight] = useState(3);
+            const [rotationPeriod, setRotationPeriod] = useState(360);
+
+            const centerX = 150;
+            const centerY = 150;
+            const maxTime = 18 * 60;
+
+            useEffect(() => {
+                generatePlotData();
+                updateHeight(time);
+            }, [radius, baseHeight, rotationPeriod]);
+
+            const generatePlotData = () => {
+                const newData = [];
+                for (let t = 0; t <= maxTime; t += 1) {
+                    newData.push(calculateHeightAtTime(t));
+                }
+                setPlotData(newData);
+            };
+
+            useEffect(() => {
+                let intervalId;
+                if (isRunning) {
+                    intervalId = setInterval(() => {
+                        setTime((prevTime) => {
+                            const newTime = (prevTime + 1) % (maxTime + 1);
+                            updateHeight(newTime);
+                            return newTime;
+                        });
+                    }, 1000);
+                }
+                return () => clearInterval(intervalId);
+            }, [isRunning, radius, baseHeight, rotationPeriod]);
+
+            const toggleSimulation = () => setIsRunning(!isRunning);
+            const resetSimulation = () => {
+                setIsRunning(false);
+                setTime(0);
+                updateHeight(0);
+            };
+
+            const calculatePosition = (time) => {
+                const angle = (time / rotationPeriod) * 360 + 270;
+                const radians = (angle * Math.PI) / 180;
+                const x = centerX + radius * 5 * Math.cos(radians);
+                const y = centerY - radius * 5 * Math.sin(radians);
+                return { x, y };
+            };
+
+            const calculateHeightAtTime = (t) => {
+                const angle = (t / rotationPeriod) * 2 * Math.PI;
+                const height = radius * (1 - Math.cos(angle)) + baseHeight;
+                return { time: t / 60, height: height };
+            };
+
+            const updateHeight = (newTime) => {
+                const { height } = calculateHeightAtTime(newTime);
+                setCurrentHeight(height);
+            };
+
+            const position = calculatePosition(time);
+
+            const formatTime = (seconds) => {
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+            };
+
+            const calculateAngle = (time) => {
+                return ((time / rotationPeriod) * 360) % 360;
+            };
+
+            return (
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    width: '100%',
+                    minHeight: '100vh',
+                    padding: '20px',
+                    gap: '40px',
+                    boxSizing: 'border-box',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+                }}>
+                    {/* 左側：摩天輪 */}
+                    <div style={{
+                        width: '50%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '20px',
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        borderRadius: '16px',
+                        padding: '30px',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#667eea', marginBottom: '10px' }}>🎡 Ferris Wheel</h2>
+
+                        <svg width="300" height="300" viewBox="0 0 300 300" style={{
+                            border: 'none',
+                            borderRadius: '12px',
+                            background: 'linear-gradient(to bottom, #e0c3fc 0%, #8ec5fc 100%)',
+                            boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.1)'
+                        }}>
+                            {/* Ground */}
+                            <rect x="0" y="250" width="300" height="50" fill="#4a5568" />
+                            <rect x="140" y="150" width="20" height="100" fill="#2d3748" />
+
+                            {/* Ferris wheel structure */}
+                            <circle cx={centerX} cy={centerY} r={radius * 5} fill="none" stroke="#2d3748" strokeWidth="3" />
+                            <circle cx={centerX} cy={centerY} r={radius * 5 - 5} fill="none" stroke="#4a5568" strokeWidth="1" opacity="0.3" />
+
+                            {/* Spokes with gradient */}
+                            {[0, 45, 90, 135, 180, 225, 270, 315].map((spoke) => {
+                                const end = calculatePosition((spoke / 360) * rotationPeriod);
+                                return (
+                                    <line
+                                        key={spoke}
+                                        x1={centerX}
+                                        y1={centerY}
+                                        x2={end.x}
+                                        y2={end.y}
+                                        stroke="#718096"
+                                        strokeWidth="2"
+                                    />
+                                );
+                            })}
+
+                            {/* Center hub */}
+                            <circle cx={centerX} cy={centerY} r="8" fill="#2d3748" />
+                            <circle cx={centerX} cy={centerY} r="4" fill="#4a5568" />
+
+                            {/* Gondola cars at each spoke */}
+                            {[0, 45, 90, 135, 180, 225, 270, 315].map((spoke) => {
+                                const pos = calculatePosition((spoke / 360) * rotationPeriod);
+                                const isCurrent = Math.abs(spoke - calculateAngle(time)) < 10;
+                                return (
+                                    <g key={`car-${spoke}`}>
+                                        <rect
+                                            x={pos.x - 8}
+                                            y={pos.y - 6}
+                                            width="16"
+                                            height="12"
+                                            fill={isCurrent ? "#f56565" : "#4299e1"}
+                                            stroke="#2d3748"
+                                            strokeWidth="1"
+                                            rx="2"
+                                        />
+                                    </g>
+                                );
+                            })}
+
+                            {/* Current position indicator */}
+                            <circle cx={position.x} cy={position.y} r="14" fill="#f56565" opacity="0.3" />
+                            <circle cx={position.x} cy={position.y} r="10" fill="#e53e3e" stroke="#fff" strokeWidth="2" />
+                        </svg>
+
+                        <div style={{ display: 'flex', gap: '12px', width: '100%', maxWidth: '400px' }}>
+                            <button
+                                style={{
+                                    flex: 1,
+                                    padding: '14px 24px',
+                                    background: isRunning ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                                    color: 'white',
+                                    borderRadius: '12px',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '16px',
+                                    fontWeight: '700',
+                                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}
+                                onClick={toggleSimulation}
+                                onMouseEnter={(e) => {
+                                    e.target.style.transform = 'translateY(-2px)';
+                                    e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.transform = 'translateY(0)';
+                                    e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+                                }}
+                            >
+                                {isRunning ? '⏸ Pause' : '▶ Start'}
+                            </button>
+                            <button
+                                style={{
+                                    flex: 1,
+                                    padding: '14px 24px',
+                                    background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                                    color: 'white',
+                                    borderRadius: '12px',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '16px',
+                                    fontWeight: '700',
+                                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                }}
+                                onClick={resetSimulation}
+                                onMouseEnter={(e) => {
+                                    e.target.style.transform = 'translateY(-2px)';
+                                    e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.transform = 'translateY(0)';
+                                    e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+                                }}
+                            >
+                                ↺ Reset
+                            </button>
+                        </div>
+
+                        <div style={{
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            padding: '24px',
+                            borderRadius: '12px',
+                            width: '100%',
+                            maxWidth: '400px',
+                            fontSize: '16px',
+                            color: 'white',
+                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)'
+                        }}>
+                            <p style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontWeight: '600' }}>⏱ Time (t):</span>
+                                <span style={{ fontSize: '18px', fontWeight: '700' }}>{formatTime(time)}</span>
+                            </p>
+                            <p style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontWeight: '600' }}>📏 Height (h):</span>
+                                <span style={{ fontSize: '18px', fontWeight: '700' }}>{currentHeight.toFixed(2)} m</span>
+                            </p>
+                            <p style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontWeight: '600' }}>🔄 Angle:</span>
+                                <span style={{ fontSize: '18px', fontWeight: '700' }}>{Math.round(calculateAngle(time))}°</span>
+                            </p>
+                            <p style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span style={{ fontWeight: '600' }}>🎡 Rotations:</span>
+                                <span style={{ fontSize: '18px', fontWeight: '700' }}>{Math.floor(time / rotationPeriod)}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* 右側：圖形和控制滑桿 */}
+                    <div style={{
+                        width: '50%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        borderRadius: '16px',
+                        padding: '30px',
+                        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                    }}>
+                        <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#764ba2', marginBottom: '20px' }}>📊 Height vs Time</h2>
+
+                        <div style={{
+                            background: 'linear-gradient(to bottom right, #fdfbfb 0%, #ebedee 100%)',
+                            padding: '20px',
+                            borderRadius: '12px',
+                            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)'
+                        }}>
+                            <LineChart width={500} height={320} data={plotData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e0" />
+                                <XAxis
+                                    dataKey="time"
+                                    domain={[0, 18]}
+                                    type="number"
+                                    tickCount={19}
+                                    stroke="#4a5568"
+                                >
+                                    <Label value="Time (t) in minutes" offset={-5} position="insideBottom" style={{ fill: '#2d3748', fontWeight: '600' }} />
+                                </XAxis>
+                                <YAxis
+                                    domain={[0, 'dataMax + 2']}
+                                    stroke="#4a5568"
+                                    label={{ value: 'Height (h) in meters', angle: -90, position: 'insideLeft', style: { fill: '#2d3748', fontWeight: '600' } }}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                        border: '2px solid #667eea',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                                    }}
+                                />
+                                <Line type="monotone" dataKey="height" stroke="#667eea" strokeWidth={3} dot={false} />
+                                <ReferenceLine x={time / 60} stroke="#e53e3e" strokeWidth={3} label={{ value: "Current", fill: "#e53e3e", fontWeight: '700' }} />
+                            </LineChart>
+                        </div>
+
+                        {/* 控制滑桿放在圖形下方 */}
+                        <div style={{ width: '100%', maxWidth: '500px', marginTop: '40px' }}>
+                            <div style={{
+                                marginBottom: '28px',
+                                padding: '16px',
+                                backgroundColor: '#f7fafc',
+                                borderRadius: '10px',
+                                border: '2px solid #e2e8f0'
+                            }}>
+                                <p style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '700', color: '#2d3748' }}>
+                                    ⏱ Time Control: <span style={{ color: '#667eea' }}>{formatTime(time)}</span>
+                                </p>
+                                <Slider
+                                    value={[time]}
+                                    onValueChange={(value) => {
+                                        setTime(value[0]);
+                                        updateHeight(value[0]);
+                                    }}
+                                    min={0}
+                                    max={maxTime}
+                                    step={1}
+                                />
+                            </div>
+
+                            <div style={{
+                                marginBottom: '28px',
+                                padding: '16px',
+                                backgroundColor: '#f7fafc',
+                                borderRadius: '10px',
+                                border: '2px solid #e2e8f0'
+                            }}>
+                                <p style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '700', color: '#2d3748' }}>
+                                    🎡 Wheel Radius: <span style={{ color: '#667eea' }}>{radius} meters</span>
+                                </p>
+                                <Slider
+                                    value={[radius]}
+                                    onValueChange={(value) => setRadius(value[0])}
+                                    min={10}
+                                    max={30}
+                                    step={1}
+                                />
+                            </div>
+
+                            <div style={{
+                                marginBottom: '28px',
+                                padding: '16px',
+                                backgroundColor: '#f7fafc',
+                                borderRadius: '10px',
+                                border: '2px solid #e2e8f0'
+                            }}>
+                                <p style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '700', color: '#2d3748' }}>
+                                    📏 Base Height: <span style={{ color: '#667eea' }}>{baseHeight} meters</span>
+                                </p>
+                                <Slider
+                                    value={[baseHeight]}
+                                    onValueChange={(value) => setBaseHeight(value[0])}
+                                    min={0}
+                                    max={10}
+                                    step={0.5}
+                                />
+                            </div>
+
+                            <div style={{
+                                marginBottom: '28px',
+                                padding: '16px',
+                                backgroundColor: '#f7fafc',
+                                borderRadius: '10px',
+                                border: '2px solid #e2e8f0'
+                            }}>
+                                <p style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '700', color: '#2d3748' }}>
+                                    🔄 Rotation Period: <span style={{ color: '#667eea' }}>{rotationPeriod / 60} minutes</span>
+                                </p>
+                                <Slider
+                                    value={[rotationPeriod]}
+                                    onValueChange={(value) => setRotationPeriod(value[0])}
+                                    min={120}
+                                    max={600}
+                                    step={60}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Render the app
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<FerrisWheelSimulator />);
+    </script>
+</body>
+</html>
