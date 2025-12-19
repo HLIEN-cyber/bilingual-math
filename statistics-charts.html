@@ -608,6 +608,14 @@
             const stats = useMemo(() => calculateStats(parsedData), [parsedData]);
 
             const generateRandomData = () => {
+                if (chartType === 'bar') {
+                    const count = 5 + Math.floor(Math.random() * 5);
+                    const labels = Array.from({ length: count }, (_, i) => String.fromCharCode(65 + i));
+                    const data = labels.map(label => `${label}:${10 + Math.floor(Math.random() * 90)}`);
+                    setBarData(data.join(', '));
+                    return;
+                }
+
                 const count = 10 + Math.floor(Math.random() * 10);
                 const data = Array.from({ length: count }, () => Math.floor(Math.random() * 100));
                 setRawData(data.join(', '));
