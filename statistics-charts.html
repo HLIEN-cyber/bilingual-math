@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式統計圖表 | Interactive Statistical Charts</title>
+
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel Standalone for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #F4EBE0 0%, #E8DDD1 50%, #F4EBE0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        #root {
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, rgba(160, 130, 109, 0.85) 0%, rgba(210, 105, 30, 0.85) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .chart-selector {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .chart-button {
+            flex: 1;
+            min-width: 150px;
+            padding: 1rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(244, 235, 224, 0.82));
+            border: 2px solid rgba(139, 90, 60, 0.12);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #888;
+            transition: all 0.3s ease;
+        }
+
+        .chart-button:hover {
+            color: #5D4037;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .chart-button.active {
+            color: #5D4037;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(244, 235, 224, 0.94));
+            border-bottom: 3px solid #5D4037;
+            box-shadow: 0 12px 26px rgba(0, 0, 0, 0.12);
+        }
+
+        .data-input-section {
+            background: linear-gradient(135deg, #F5EBE0 0%, #EFE4D7 100%);
+            border-left: 4px solid #8B5A3C;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .data-input-section h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .data-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #d1b89d;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .action-button {
+            padding: 0.8rem 1.5rem;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .chart-button {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // 統計計算函數
+        const calculateStats = (data) => {
+            if (!data || data.length === 0) return null;
+
+            const sorted = [...data].sort((a, b) => a - b);
+            const n = sorted.length;
+            const sum = sorted.reduce((acc, val) => acc + val, 0);
+            const mean = sum / n;
+
+            const variance = sorted.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / n;
+            const stdDev = Math.sqrt(variance);
+
+            const median = n % 2 === 0
+                ? (sorted[n/2 - 1] + sorted[n/2]) / 2
+                : sorted[Math.floor(n/2)];
+
+            const q1 = n % 2 === 0
+                ? (sorted[Math.floor(n/4) - 1] + sorted[Math.floor(n/4)]) / 2
+                : sorted[Math.floor(n/4)];
+
+            const q3 = n % 2 === 0
+                ? (sorted[Math.floor(3*n/4) - 1] + sorted[Math.floor(3*n/4)]) / 2
+                : sorted[Math.floor(3*n/4)];
+
+            return {
+                count: n,
+                min: sorted[0],
+                max: sorted[n-1],
+                mean: mean,
+                median: median,
+                stdDev: stdDev,
+                q1: q1,
+                q3: q3,
+                range: sorted[n-1] - sorted[0]
+            };
+        };
+
+        // 長條圖組件
+        const BarChart = ({ data, width = 800, height = 400 }) => {
+            const padding = { top: 40, right: 40, bottom: 60, left: 60 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            const maxValue = Math.max(...data.map(d => d.value));
+            const barWidth = chartWidth / data.length;
+
+            return (
+                <svg width={width} height={height} style={{ background: '#f7fafc', borderRadius: '12px' }}>
+                    {/* 網格線 */}
+                    {[0, 1, 2, 3, 4, 5].map(i => {
+                        const y = padding.top + (chartHeight / 5) * i;
+                        const value = maxValue * (5 - i) / 5;
+                        return (
+                            <g key={i}>
+                                <line
+                                    x1={padding.left}
+                                    y1={y}
+                                    x2={width - padding.right}
+                                    y2={y}
+                                    stroke="#cbd5e0"
+                                    strokeDasharray="3 3"
+                                />
+                                <text x={padding.left - 10} y={y + 5} textAnchor="end" fontSize="12" fill="#4a5568">
+                                    {value.toFixed(0)}
+                                </text>
+                            </g>
+                        );
+                    })}
+
+                    {/* 座標軸 */}
+                    <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#2d3748" strokeWidth="2" />
+                    <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="#2d3748" strokeWidth="2" />
+
+                    {/* 長條 */}
+                    {data.map((d, i) => {
+                        const barHeight = (d.value / maxValue) * chartHeight;
+                        const x = padding.left + i * barWidth + barWidth * 0.1;
+                        const y = height - padding.bottom - barHeight;
+                        const rectWidth = barWidth * 0.8;
+
+                        return (
+                            <g key={i}>
+                                <rect
+                                    x={x}
+                                    y={y}
+                                    width={rectWidth}
+                                    height={barHeight}
+                                    fill={`hsl(${(i * 360) / data.length}, 70%, 60%)`}
+                                    stroke="#2d3748"
+                                    strokeWidth="1"
+                                />
+                                <text
+                                    x={x + rectWidth / 2}
+                                    y={height - padding.bottom + 20}
+                                    textAnchor="middle"
+                                    fontSize="12"
+                                    fill="#2d3748"
+                                >
+                                    {d.label}
+                                </text>
+                                <text
+                                    x={x + rectWidth / 2}
+                                    y={y - 5}
+                                    textAnchor="middle"
+                                    fontSize="12"
+                                    fontWeight="700"
+                                    fill="#2d3748"
+                                >
+                                    {d.value}
+                                </text>
+                            </g>
+                        );
+                    })}
+
+                    {/* 軸標籤 */}
+                    <text x={width / 2} y={height - 10} textAnchor="middle" fontSize="14" fontWeight="600" fill="#2d3748">
+                        類別 Categories
+                    </text>
+                    <text x={20} y={height / 2} textAnchor="middle" fontSize="14" fontWeight="600" fill="#2d3748" transform={`rotate(-90, 20, ${height / 2})`}>
+                        數值 Values
+                    </text>
+                </svg>
+            );
+        };
+
+        // 直方圖組件
+        const Histogram = ({ data, bins = 10, width = 800, height = 400 }) => {
+            const padding = { top: 40, right: 40, bottom: 60, left: 60 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const binWidth = (max - min) / bins;
+
+            const histogram = Array.from({ length: bins }, (_, i) => {
+                const binStart = min + i * binWidth;
+                const binEnd = binStart + binWidth;
+                const count = data.filter(d => d >= binStart && d < binEnd).length;
+                return { binStart, binEnd, count };
+            });
+
+            const maxCount = Math.max(...histogram.map(h => h.count));
+            const barWidth = chartWidth / bins;
+
+            return (
+                <svg width={width} height={height} style={{ background: '#f7fafc', borderRadius: '12px' }}>
+                    {/* 網格線 */}
+                    {[0, 1, 2, 3, 4, 5].map(i => {
+                        const y = padding.top + (chartHeight / 5) * i;
+                        const value = maxCount * (5 - i) / 5;
+                        return (
+                            <g key={i}>
+                                <line
+                                    x1={padding.left}
+                                    y1={y}
+                                    x2={width - padding.right}
+                                    y2={y}
+                                    stroke="#cbd5e0"
+                                    strokeDasharray="3 3"
+                                />
+                                <text x={padding.left - 10} y={y + 5} textAnchor="end" fontSize="12" fill="#4a5568">
+                                    {value.toFixed(0)}
+                                </text>
+                            </g>
+                        );
+                    })}
+
+                    {/* 座標軸 */}
+                    <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#2d3748" strokeWidth="2" />
+                    <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="#2d3748" strokeWidth="2" />
+
+                    {/* 直方圖長條 */}
+                    {histogram.map((h, i) => {
+                        const barHeight = (h.count / maxCount) * chartHeight;
+                        const x = padding.left + i * barWidth;
+                        const y = height - padding.bottom - barHeight;
+
+                        return (
+                            <g key={i}>
+                                <rect
+                                    x={x}
+                                    y={y}
+                                    width={barWidth - 2}
+                                    height={barHeight}
+                                    fill="#667eea"
+                                    stroke="#2d3748"
+                                    strokeWidth="1"
+                                />
+                                <text
+                                    x={x + barWidth / 2}
+                                    y={height - padding.bottom + 20}
+                                    textAnchor="middle"
+                                    fontSize="10"
+                                    fill="#2d3748"
+                                >
+                                    {h.binStart.toFixed(1)}
+                                </text>
+                                {h.count > 0 && (
+                                    <text
+                                        x={x + barWidth / 2}
+                                        y={y - 5}
+                                        textAnchor="middle"
+                                        fontSize="12"
+                                        fontWeight="700"
+                                        fill="#2d3748"
+                                    >
+                                        {h.count}
+                                    </text>
+                                )}
+                            </g>
+                        );
+                    })}
+
+                    {/* 軸標籤 */}
+                    <text x={width / 2} y={height - 10} textAnchor="middle" fontSize="14" fontWeight="600" fill="#2d3748">
+                        數值範圍 Value Range
+                    </text>
+                    <text x={20} y={height / 2} textAnchor="middle" fontSize="14" fontWeight="600" fill="#2d3748" transform={`rotate(-90, 20, ${height / 2})`}>
+                        頻率 Frequency
+                    </text>
+                </svg>
+            );
+        };
+
+        // 盒鬚圖組件
+        const BoxPlot = ({ data, width = 800, height = 400 }) => {
+            const padding = { top: 40, right: 40, bottom: 60, left: 60 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            const stats = calculateStats(data);
+            if (!stats) return null;
+
+            const { min, max, q1, median, q3 } = stats;
+            const range = max - min;
+
+            const scale = (value) => {
+                return padding.left + ((value - min) / range) * chartWidth;
+            };
+
+            const boxTop = padding.top + chartHeight * 0.3;
+            const boxBottom = padding.top + chartHeight * 0.7;
+            const boxHeight = boxBottom - boxTop;
+
+            return (
+                <svg width={width} height={height} style={{ background: '#f7fafc', borderRadius: '12px' }}>
+                    {/* 網格線 */}
+                    {[min, q1, median, q3, max].map((value, i) => (
+                        <g key={i}>
+                            <line
+                                x1={scale(value)}
+                                y1={padding.top}
+                                x2={scale(value)}
+                                y2={height - padding.bottom}
+                                stroke="#cbd5e0"
+                                strokeDasharray="3 3"
+                            />
+                            <text
+                                x={scale(value)}
+                                y={height - padding.bottom + 20}
+                                textAnchor="middle"
+                                fontSize="12"
+                                fill="#4a5568"
+                            >
+                                {value.toFixed(2)}
+                            </text>
+                        </g>
+                    ))}
+
+                    {/* 座標軸 */}
+                    <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#2d3748" strokeWidth="2" />
+
+                    {/* 鬚 (Whiskers) */}
+                    <line x1={scale(min)} y1={boxTop + boxHeight/2} x2={scale(q1)} y2={boxTop + boxHeight/2} stroke="#2d3748" strokeWidth="2" />
+                    <line x1={scale(q3)} y1={boxTop + boxHeight/2} x2={scale(max)} y2={boxTop + boxHeight/2} stroke="#2d3748" strokeWidth="2" />
+                    <line x1={scale(min)} y1={boxTop + boxHeight*0.3} x2={scale(min)} y2={boxTop + boxHeight*0.7} stroke="#2d3748" strokeWidth="2" />
+                    <line x1={scale(max)} y1={boxTop + boxHeight*0.3} x2={scale(max)} y2={boxTop + boxHeight*0.7} stroke="#2d3748" strokeWidth="2" />
+
+                    {/* 盒子 (Box) */}
+                    <rect
+                        x={scale(q1)}
+                        y={boxTop}
+                        width={scale(q3) - scale(q1)}
+                        height={boxHeight}
+                        fill="#667eea"
+                        fillOpacity="0.6"
+                        stroke="#2d3748"
+                        strokeWidth="2"
+                    />
+
+                    {/* 中位數線 */}
+                    <line x1={scale(median)} y1={boxTop} x2={scale(median)} y2={boxBottom} stroke="#e53e3e" strokeWidth="3" />
+
+                    {/* 標籤 */}
+                    <text x={scale(min)} y={boxTop - 10} textAnchor="middle" fontSize="11" fontWeight="600" fill="#2d3748">Min</text>
+                    <text x={scale(q1)} y={boxTop - 10} textAnchor="middle" fontSize="11" fontWeight="600" fill="#2d3748">Q1</text>
+                    <text x={scale(median)} y={boxTop - 10} textAnchor="middle" fontSize="11" fontWeight="600" fill="#e53e3e">中位數 Median</text>
+                    <text x={scale(q3)} y={boxTop - 10} textAnchor="middle" fontSize="11" fontWeight="600" fill="#2d3748">Q3</text>
+                    <text x={scale(max)} y={boxTop - 10} textAnchor="middle" fontSize="11" fontWeight="600" fill="#2d3748">Max</text>
+
+                    {/* 軸標籤 */}
+                    <text x={width / 2} y={height - 10} textAnchor="middle" fontSize="14" fontWeight="600" fill="#2d3748">
+                        數值 Values
+                    </text>
+                </svg>
+            );
+        };
+
+        // 散佈圖組件
+        const ScatterPlot = ({ data, width = 800, height = 400 }) => {
+            const padding = { top: 40, right: 40, bottom: 60, left: 60 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            const xValues = data.map(d => d.x);
+            const yValues = data.map(d => d.y);
+            const xMin = Math.min(...xValues);
+            const xMax = Math.max(...xValues);
+            const yMin = Math.min(...yValues);
+            const yMax = Math.max(...yValues);
+
+            const xScale = (x) => padding.left + ((x - xMin) / (xMax - xMin)) * chartWidth;
+            const yScale = (y) => height - padding.bottom - ((y - yMin) / (yMax - yMin)) * chartHeight;
+
+            return (
+                <svg width={width} height={height} style={{ background: '#f7fafc', borderRadius: '12px' }}>
+                    {/* 網格線 */}
+                    {[0, 1, 2, 3, 4, 5].map(i => {
+                        const x = padding.left + (chartWidth / 5) * i;
+                        const y = padding.top + (chartHeight / 5) * i;
+                        const xValue = xMin + ((xMax - xMin) / 5) * i;
+                        const yValue = yMax - ((yMax - yMin) / 5) * i;
+
+                        return (
+                            <g key={i}>
+                                <line x1={x} y1={padding.top} x2={x} y2={height - padding.bottom} stroke="#cbd5e0" strokeDasharray="3 3" />
+                                <line x1={padding.left} y1={y} x2={width - padding.right} y2={y} stroke="#cbd5e0" strokeDasharray="3 3" />
+                                <text x={x} y={height - padding.bottom + 20} textAnchor="middle" fontSize="12" fill="#4a5568">
+                                    {xValue.toFixed(1)}
+                                </text>
+                                <text x={padding.left - 10} y={y + 5} textAnchor="end" fontSize="12" fill="#4a5568">
+                                    {yValue.toFixed(1)}
+                                </text>
+                            </g>
+                        );
+                    })}
+
+                    {/* 座標軸 */}
+                    <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#2d3748" strokeWidth="2" />
+                    <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="#2d3748" strokeWidth="2" />
+
+                    {/* 散佈點 */}
+                    {data.map((d, i) => (
+                        <circle
+                            key={i}
+                            cx={xScale(d.x)}
+                            cy={yScale(d.y)}
+                            r="6"
+                            fill="#667eea"
+                            fillOpacity="0.7"
+                            stroke="#2d3748"
+                            strokeWidth="1"
+                        />
+                    ))}
+
+                    {/* 軸標籤 */}
+                    <text x={width / 2} y={height - 10} textAnchor="middle" fontSize="14" fontWeight="600" fill="#2d3748">
+                        X 數值 X Values
+                    </text>
+                    <text x={20} y={height / 2} textAnchor="middle" fontSize="14" fontWeight="600" fill="#2d3748" transform={`rotate(-90, 20, ${height / 2})`}>
+                        Y 數值 Y Values
+                    </text>
+                </svg>
+            );
+        };
+
+        // 主應用組件
+        const StatisticsApp = () => {
+            const [chartType, setChartType] = useState('bar');
+            const [rawData, setRawData] = useState('12, 15, 18, 22, 25, 28, 30, 32, 35, 38');
+            const [barData, setBarData] = useState('A:12, B:15, C:18, D:22, E:25');
+
+            const parsedData = useMemo(() => {
+                try {
+                    return rawData.split(',').map(d => parseFloat(d.trim())).filter(d => !isNaN(d));
+                } catch {
+                    return [];
+                }
+            }, [rawData]);
+
+            const parsedBarData = useMemo(() => {
+                try {
+                    return barData.split(',').map(item => {
+                        const [label, value] = item.split(':');
+                        return { label: label.trim(), value: parseFloat(value.trim()) };
+                    }).filter(d => !isNaN(d.value));
+                } catch {
+                    return [];
+                }
+            }, [barData]);
+
+            const scatterData = useMemo(() => {
+                try {
+                    const pairs = rawData.split(',').map(d => parseFloat(d.trim())).filter(d => !isNaN(d));
+                    const result = [];
+                    for (let i = 0; i < pairs.length - 1; i++) {
+                        result.push({ x: pairs[i], y: pairs[i + 1] });
+                    }
+                    return result;
+                } catch {
+                    return [];
+                }
+            }, [rawData]);
+
+            const stats = useMemo(() => calculateStats(parsedData), [parsedData]);
+
+            const generateRandomData = () => {
+                const count = 10 + Math.floor(Math.random() * 10);
+                const data = Array.from({ length: count }, () => Math.floor(Math.random() * 100));
+                setRawData(data.join(', '));
+            };
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>互動式統計圖表</h1>
+                        <p className="subtitle">Interactive Statistical Charts</p>
+                    </div>
+
+                    <div className="main-content">
+                        <div className="chart-selector">
+                            <button
+                                className={`chart-button ${chartType === 'bar' ? 'active' : ''}`}
+                                onClick={() => setChartType('bar')}
+                            >
+                                📊 長條圖<br /><small>Bar Chart</small>
+                            </button>
+                            <button
+                                className={`chart-button ${chartType === 'histogram' ? 'active' : ''}`}
+                                onClick={() => setChartType('histogram')}
+                            >
+                                📈 直方圖<br /><small>Histogram</small>
+                            </button>
+                            <button
+                                className={`chart-button ${chartType === 'boxplot' ? 'active' : ''}`}
+                                onClick={() => setChartType('boxplot')}
+                            >
+                                📦 盒鬚圖<br /><small>Box Plot</small>
+                            </button>
+                            <button
+                                className={`chart-button ${chartType === 'scatter' ? 'active' : ''}`}
+                                onClick={() => setChartType('scatter')}
+                            >
+                                ⭐ 散佈圖<br /><small>Scatter Plot</small>
+                            </button>
+                        </div>
+
+                        <div className="data-input-section">
+                            <h3>
+                                {chartType === 'bar' ? '📝 輸入資料 (格式: 標籤:數值) | Enter Data (Format: Label:Value)' : '📝 輸入資料 (用逗號分隔) | Enter Data (Comma Separated)'}
+                            </h3>
+                            <div className="button-group">
+                                <button className="action-button" onClick={generateRandomData}>
+                                    🎲 隨機產生資料 Generate Random Data
+                                </button>
+                            </div>
+                            <input
+                                type="text"
+                                className="data-input"
+                                value={chartType === 'bar' ? barData : rawData}
+                                onChange={(e) => chartType === 'bar' ? setBarData(e.target.value) : setRawData(e.target.value)}
+                                placeholder={chartType === 'bar' ? "例如: A:12, B:15, C:18, D:22, E:25" : "例如: 12, 15, 18, 22, 25, 28, 30"}
+                            />
+                        </div>
+
+                        <div className="chart-container">
+                            {chartType === 'bar' && parsedBarData.length > 0 && (
+                                <BarChart data={parsedBarData} />
+                            )}
+                            {chartType === 'histogram' && parsedData.length > 0 && (
+                                <Histogram data={parsedData} />
+                            )}
+                            {chartType === 'boxplot' && parsedData.length > 0 && (
+                                <BoxPlot data={parsedData} />
+                            )}
+                            {chartType === 'scatter' && scatterData.length > 0 && (
+                                <ScatterPlot data={scatterData} />
+                            )}
+                        </div>
+
+                        {stats && chartType !== 'bar' && (
+                            <div className="stats-summary">
+                                <div className="stat-card">
+                                    <div className="stat-label">樣本數 Count</div>
+                                    <div className="stat-value">{stats.count}</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-label">平均數 Mean</div>
+                                    <div className="stat-value">{stats.mean.toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-label">中位數 Median</div>
+                                    <div className="stat-value">{stats.median.toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-label">標準差 Std Dev</div>
+                                    <div className="stat-value">{stats.stdDev.toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-label">最小值 Min</div>
+                                    <div className="stat-value">{stats.min.toFixed(2)}</div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-label">最大值 Max</div>
+                                    <div className="stat-value">{stats.max.toFixed(2)}</div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // 渲染應用
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<StatisticsApp />);
+    </script>
+</body>
+</html>
