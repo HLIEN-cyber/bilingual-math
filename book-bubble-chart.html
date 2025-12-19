@@ -58,7 +58,7 @@
         }
 
         .main-content {
-            padding: 2rem;
+            padding: 1.5rem;
         }
 
         .intro {
@@ -74,42 +74,11 @@
         .chart-container {
             background: white;
             border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-
-        .legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-top: 2rem;
             padding: 1.5rem;
-            background: linear-gradient(135deg, #F5EBE0 0%, #EFE4D7 100%);
-            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
         }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid #333;
-        }
-
-        .legend-text {
-            font-size: 0.9rem;
-            color: #333;
-        }
 
         .tooltip {
             position: absolute;
@@ -154,20 +123,6 @@
                 padding: 0.5rem;
             }
 
-            .legend {
-                gap: 0.5rem;
-                padding: 1rem;
-            }
-
-            .legend-item {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.85rem;
-            }
-
-            .legend-color {
-                width: 16px;
-                height: 16px;
-            }
 
             .tooltip {
                 font-size: 0.8rem;
@@ -187,11 +142,6 @@
 
             .intro {
                 font-size: 0.85rem;
-            }
-
-            .legend-item {
-                width: 100%;
-                justify-content: flex-start;
             }
         }
     </style>
@@ -311,7 +261,7 @@
                             height = 500;
                         } else {
                             width = Math.min(containerWidth, 1200);
-                            height = 600;
+                            height = 500;
                         }
 
                         setDimensions({ width, height });
@@ -562,19 +512,6 @@
                             <BubbleChart data={booksData} />
                         </div>
 
-                        <div className="legend">
-                            {booksData.map((book, i) => (
-                                <div key={i} className="legend-item">
-                                    <div
-                                        className="legend-color"
-                                        style={{ backgroundColor: book.color }}
-                                    ></div>
-                                    <span className="legend-text">
-                                        <strong>{book.title}</strong>
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
                     </div>
                 </div>
             );
