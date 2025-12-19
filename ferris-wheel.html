@@ -9,9 +9,6 @@
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
-    <!-- Recharts -->
-    <script src="https://unpkg.com/recharts@2.5.0/dist/Recharts.js"></script>
-
     <!-- Babel Standalone for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
@@ -101,7 +98,6 @@
 
     <script type="text/babel">
         const { useState, useEffect } = React;
-        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Label } = Recharts;
 
         // Custom Slider Component
         const Slider = ({ value, onValueChange, min, max, step }) => {
@@ -118,6 +114,125 @@
                         step={step}
                     />
                 </div>
+            );
+        };
+
+        // Custom SVG Chart Component
+        const HeightChart = ({ data, currentTime, width = 500, height = 320 }) => {
+            const padding = { top: 20, right: 20, bottom: 50, left: 60 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+
+            // Calculate scales
+            const maxHeight = Math.max(...data.map(d => d.height)) + 2;
+            const maxTime = Math.max(...data.map(d => d.time));
+
+            const xScale = (t) => (t / maxTime) * chartWidth + padding.left;
+            const yScale = (h) => chartHeight - (h / maxHeight) * chartHeight + padding.top;
+
+            // Generate path for the line
+            const pathData = data.map((point, i) => {
+                const x = xScale(point.time);
+                const y = yScale(point.height);
+                return i === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+            }).join(' ');
+
+            // Generate grid lines
+            const xTicks = Array.from({ length: 19 }, (_, i) => i);
+            const yTicks = Array.from({ length: 6 }, (_, i) => (i * maxHeight) / 5);
+
+            return (
+                <svg width={width} height={height} style={{
+                    background: 'linear-gradient(to bottom right, #fdfbfb 0%, #ebedee 100%)',
+                    borderRadius: '12px'
+                }}>
+                    {/* Grid lines */}
+                    {xTicks.map(tick => (
+                        <line
+                            key={`x-grid-${tick}`}
+                            x1={xScale(tick)}
+                            y1={padding.top}
+                            x2={xScale(tick)}
+                            y2={height - padding.bottom}
+                            stroke="#cbd5e0"
+                            strokeDasharray="3 3"
+                            strokeWidth="1"
+                        />
+                    ))}
+                    {yTicks.map((tick, i) => (
+                        <line
+                            key={`y-grid-${i}`}
+                            x1={padding.left}
+                            y1={yScale(tick)}
+                            x2={width - padding.right}
+                            y2={yScale(tick)}
+                            stroke="#cbd5e0"
+                            strokeDasharray="3 3"
+                            strokeWidth="1"
+                        />
+                    ))}
+
+                    {/* Axes */}
+                    <line x1={padding.left} y1={height - padding.bottom} x2={width - padding.right} y2={height - padding.bottom} stroke="#4a5568" strokeWidth="2" />
+                    <line x1={padding.left} y1={padding.top} x2={padding.left} y2={height - padding.bottom} stroke="#4a5568" strokeWidth="2" />
+
+                    {/* X-axis labels */}
+                    {xTicks.map(tick => (
+                        <text
+                            key={`x-label-${tick}`}
+                            x={xScale(tick)}
+                            y={height - padding.bottom + 20}
+                            textAnchor="middle"
+                            fontSize="12"
+                            fill="#4a5568"
+                        >
+                            {tick}
+                        </text>
+                    ))}
+                    <text x={width / 2} y={height - 10} textAnchor="middle" fontSize="14" fill="#2d3748" fontWeight="600">
+                        Time (t) in minutes
+                    </text>
+
+                    {/* Y-axis labels */}
+                    {yTicks.map((tick, i) => (
+                        <text
+                            key={`y-label-${i}`}
+                            x={padding.left - 10}
+                            y={yScale(tick) + 4}
+                            textAnchor="end"
+                            fontSize="12"
+                            fill="#4a5568"
+                        >
+                            {tick.toFixed(0)}
+                        </text>
+                    ))}
+                    <text x={15} y={height / 2} textAnchor="middle" fontSize="14" fill="#2d3748" fontWeight="600" transform={`rotate(-90, 15, ${height / 2})`}>
+                        Height (h) in meters
+                    </text>
+
+                    {/* Data line */}
+                    <path d={pathData} fill="none" stroke="#667eea" strokeWidth="3" />
+
+                    {/* Current time indicator */}
+                    <line
+                        x1={xScale(currentTime / 60)}
+                        y1={padding.top}
+                        x2={xScale(currentTime / 60)}
+                        y2={height - padding.bottom}
+                        stroke="#e53e3e"
+                        strokeWidth="3"
+                    />
+                    <text
+                        x={xScale(currentTime / 60)}
+                        y={padding.top - 5}
+                        textAnchor="middle"
+                        fontSize="12"
+                        fill="#e53e3e"
+                        fontWeight="700"
+                    >
+                        Current
+                    </text>
+                </svg>
             );
         };
 
@@ -386,38 +501,11 @@
                         <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#764ba2', marginBottom: '20px' }}>📊 Height vs Time</h2>
 
                         <div style={{
-                            background: 'linear-gradient(to bottom right, #fdfbfb 0%, #ebedee 100%)',
                             padding: '20px',
                             borderRadius: '12px',
                             boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)'
                         }}>
-                            <LineChart width={500} height={320} data={plotData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e0" />
-                                <XAxis
-                                    dataKey="time"
-                                    domain={[0, 18]}
-                                    type="number"
-                                    tickCount={19}
-                                    stroke="#4a5568"
-                                >
-                                    <Label value="Time (t) in minutes" offset={-5} position="insideBottom" style={{ fill: '#2d3748', fontWeight: '600' }} />
-                                </XAxis>
-                                <YAxis
-                                    domain={[0, 'dataMax + 2']}
-                                    stroke="#4a5568"
-                                    label={{ value: 'Height (h) in meters', angle: -90, position: 'insideLeft', style: { fill: '#2d3748', fontWeight: '600' } }}
-                                />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                        border: '2px solid #667eea',
-                                        borderRadius: '8px',
-                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-                                    }}
-                                />
-                                <Line type="monotone" dataKey="height" stroke="#667eea" strokeWidth={3} dot={false} />
-                                <ReferenceLine x={time / 60} stroke="#e53e3e" strokeWidth={3} label={{ value: "Current", fill: "#e53e3e", fontWeight: '700' }} />
-                            </LineChart>
+                            <HeightChart data={plotData} currentTime={time} width={500} height={320} />
                         </div>
 
                         {/* 控制滑桿放在圖形下方 */}
