@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>书籍评分页数对比图 | Book Rating & Pages Bubble Chart</title>
+    <title>書籍閱讀分級與頁數對比圖 | Book Lexile Level & Pages Bubble Chart</title>
 
     <!-- React and ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -146,7 +146,7 @@
             {
                 title: "In Five Years",
                 author: "Rebecca Serle",
-                year: 2020,
+                lexile: 800,
                 rating: 3.8,
                 pages: 255,
                 color: "#FF6B6B"
@@ -154,7 +154,7 @@
             {
                 title: "Project Hail Mary",
                 author: "Andy Weir",
-                year: 2021,
+                lexile: 950,
                 rating: 4.6,
                 pages: 476,
                 color: "#4ECDC4"
@@ -162,7 +162,7 @@
             {
                 title: "Hidden Pictures",
                 author: "Jason Rekulak",
-                year: 2022,
+                lexile: 750,
                 rating: 4.1,
                 pages: 370,
                 color: "#45B7D1"
@@ -170,7 +170,7 @@
             {
                 title: "Yellowface",
                 author: "R.F. Kuang",
-                year: 2023,
+                lexile: 820,
                 rating: 4.0,
                 pages: 336,
                 color: "#F9D71C"
@@ -178,7 +178,7 @@
             {
                 title: "The Love Hypothesis",
                 author: "Ali Hazelwood",
-                year: 2021,
+                lexile: 800,
                 rating: 4.0,
                 pages: 384,
                 color: "#FF85A6"
@@ -186,7 +186,7 @@
             {
                 title: "Tomorrow, and Tomorrow, and Tomorrow",
                 author: "Gabrielle Zevin",
-                year: 2022,
+                lexile: 900,
                 rating: 4.3,
                 pages: 416,
                 color: "#95E1D3"
@@ -194,7 +194,7 @@
             {
                 title: "Anxious People",
                 author: "Fredrik Backman",
-                year: 2019,
+                lexile: 780,
                 rating: 4.2,
                 pages: 352,
                 color: "#A8E6CF"
@@ -202,7 +202,7 @@
             {
                 title: "Remarkably Bright Creatures",
                 author: "Shelby Van Pelt",
-                year: 2022,
+                lexile: 760,
                 rating: 4.4,
                 pages: 368,
                 color: "#FFD3B6"
@@ -210,7 +210,7 @@
             {
                 title: "Eleven Numbers",
                 author: "Lee Child",
-                year: 2016,
+                lexile: 700,
                 rating: 3.9,
                 pages: 60,
                 color: "#AA96DA"
@@ -218,7 +218,7 @@
             {
                 title: "Teacher",
                 author: "Freida McFadden",
-                year: 2024,
+                lexile: 730,
                 rating: 3.7,
                 pages: 336,
                 color: "#FCBAD3"
@@ -234,18 +234,18 @@
             const chartWidth = width - padding.left - padding.right;
             const chartHeight = height - padding.top - padding.bottom;
 
-            const yearMin = 2015;
-            const yearMax = 2025;
+            const lexileMin = 650;
+            const lexileMax = 1000;
+            const pagesMin = 0;
+            const pagesMax = 500;
+
+            const xScale = (lexile) => padding.left + ((lexile - lexileMin) / (lexileMax - lexileMin)) * chartWidth;
+            const yScale = (pages) => height - padding.bottom - ((pages - pagesMin) / (pagesMax - pagesMin)) * chartHeight;
+
+            // 评分范围（用于气泡大小）
             const ratingMin = 3.5;
             const ratingMax = 5.0;
-
-            const xScale = (year) => padding.left + ((year - yearMin) / (yearMax - yearMin)) * chartWidth;
-            const yScale = (rating) => height - padding.bottom - ((rating - ratingMin) / (ratingMax - ratingMin)) * chartHeight;
-
-            // 页数范围
-            const pagesMin = Math.min(...data.map(d => d.pages));
-            const pagesMax = Math.max(...data.map(d => d.pages));
-            const radiusScale = (pages) => 10 + ((pages - pagesMin) / (pagesMax - pagesMin)) * 40;
+            const radiusScale = (rating) => 10 + ((rating - ratingMin) / (ratingMax - ratingMin)) * 40;
 
             const handleMouseEnter = (book, event) => {
                 const rect = svgRef.current.getBoundingClientRect();
@@ -264,9 +264,8 @@
                 <div style={{ position: 'relative' }}>
                     <svg ref={svgRef} width={width} height={height} style={{ background: '#f7fafc', borderRadius: '12px' }}>
                         {/* X轴网格线和标签 */}
-                        {Array.from({ length: 11 }, (_, i) => {
-                            const year = yearMin + i;
-                            const x = xScale(year);
+                        {[650, 700, 750, 800, 850, 900, 950, 1000].map((lexile, i) => {
+                            const x = xScale(lexile);
                             return (
                                 <g key={`x-${i}`}>
                                     <line
@@ -285,15 +284,15 @@
                                         fill="#4a5568"
                                         fontWeight="600"
                                     >
-                                        {year}
+                                        {lexile}L
                                     </text>
                                 </g>
                             );
                         })}
 
                         {/* Y轴网格线和标签 */}
-                        {[3.5, 3.75, 4.0, 4.25, 4.5, 4.75, 5.0].map((rating, i) => {
-                            const y = yScale(rating);
+                        {[0, 100, 200, 300, 400, 500].map((pages, i) => {
+                            const y = yScale(pages);
                             return (
                                 <g key={`y-${i}`}>
                                     <line
@@ -312,7 +311,7 @@
                                         fill="#4a5568"
                                         fontWeight="600"
                                     >
-                                        {rating.toFixed(2)}
+                                        {pages}
                                     </text>
                                 </g>
                             );
@@ -338,9 +337,9 @@
 
                         {/* 气泡 */}
                         {data.map((book, i) => {
-                            const cx = xScale(book.year);
-                            const cy = yScale(book.rating);
-                            const r = radiusScale(book.pages);
+                            const cx = xScale(book.lexile);
+                            const cy = yScale(book.pages);
+                            const r = radiusScale(book.rating);
 
                             return (
                                 <g key={i}>
@@ -365,7 +364,7 @@
                                         fill="#2d3748"
                                         pointerEvents="none"
                                     >
-                                        {book.pages}p
+                                        {book.rating}
                                     </text>
                                 </g>
                             );
@@ -380,7 +379,7 @@
                             fontWeight="700"
                             fill="#2d3748"
                         >
-                            出版年份 Publication Year
+                            藍思閱讀分級 Lexile Level
                         </text>
 
                         {/* Y轴标签 */}
@@ -393,7 +392,7 @@
                             fill="#2d3748"
                             transform={`rotate(-90, 25, ${height / 2})`}
                         >
-                            评分 Rating
+                            頁數 Pages
                         </text>
 
                         {/* 图表标题 */}
@@ -405,7 +404,7 @@
                             fontWeight="700"
                             fill="#2d3748"
                         >
-                            📖 书籍评分页数对比图（气泡大小 = 页数）
+                            📖 書籍閱讀分級與頁數對比圖（氣泡大小 = 評分）
                         </text>
                     </svg>
 
@@ -420,9 +419,9 @@
                         >
                             <strong>{tooltip.book.title}</strong><br />
                             作者: {tooltip.book.author}<br />
-                            年份: {tooltip.book.year}<br />
-                            评分: {tooltip.book.rating}<br />
-                            页数: {tooltip.book.pages}
+                            Lexile: {tooltip.book.lexile}L<br />
+                            頁數: {tooltip.book.pages}<br />
+                            評分: {tooltip.book.rating}
                         </div>
                     )}
                 </div>
@@ -434,18 +433,18 @@
             return (
                 <div className="container">
                     <div className="header">
-                        <h1>书籍评分页数对比图</h1>
-                        <p className="subtitle">Book Rating & Pages Bubble Chart</p>
+                        <h1>書籍閱讀分級與頁數對比圖</h1>
+                        <p className="subtitle">Book Lexile Level & Pages Bubble Chart</p>
                     </div>
 
                     <div className="main-content">
                         <div className="intro">
                             <p>
-                                <strong>📊 可视化说明：</strong><br />
-                                这个气泡图展示了小说与双语数学部分推荐的10本书籍的出版年份、评分和页数关系。
-                                X轴代表出版年份（2015-2025），Y轴代表评分（3.5-5.0），
-                                气泡的大小代表书籍页数（页数越多，气泡越大）。
-                                将鼠标悬停在气泡上可以查看详细信息。
+                                <strong>📊 可視化說明：</strong><br />
+                                這個氣泡圖展示了小說與雙語數學部分推薦的10本書籍的藍思閱讀分級、頁數和評分關係。
+                                X軸代表藍思閱讀分級 Lexile Level（650L-1000L），Y軸代表頁數（0-500頁），
+                                氣泡的大小代表書籍評分（評分越高，氣泡越大）。
+                                將滑鼠懸停在氣泡上可以查看詳細資訊。
                             </p>
                         </div>
 
@@ -461,7 +460,7 @@
                                         style={{ backgroundColor: book.color }}
                                     ></div>
                                     <span className="legend-text">
-                                        <strong>{book.title}</strong> ({book.year})
+                                        <strong>{book.title}</strong> (Lexile: {book.lexile}L, 頁數: {book.pages}, 評分: {book.rating})
                                     </span>
                                 </div>
                             ))}
